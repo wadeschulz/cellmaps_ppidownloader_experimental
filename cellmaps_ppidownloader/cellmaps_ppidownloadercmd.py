@@ -144,7 +144,6 @@ Additional optional fields for registering datasets include
 
         return CellmapsPPIDownloader(outdir=theargs.outdir,
                                      apmsgen=apmsgen,
-                                     image_url=theargs.image_url,
                                      skip_logging=theargs.skip_logging,
                                      input_data_dict=theargs.__dict__,
                                      provenance=json_prov).run()

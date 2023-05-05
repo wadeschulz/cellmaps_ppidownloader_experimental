@@ -1,7 +1,8 @@
 
 import re
-import mygene
+import csv
 import logging
+import mygene
 from cellmaps_ppidownloader.exceptions import CellMapsPPIDownloaderError
 
 logger = logging.getLogger(__name__)

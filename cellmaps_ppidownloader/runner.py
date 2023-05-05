@@ -96,14 +96,14 @@ class CellmapsPPIDownloader(object):
                      'project-name': 'Name of project'}
         if with_ids is not None and with_ids is True:
             guid_dict = ProvenanceUtil.example_dataset_provenance(with_ids=with_ids)
-            base_dict.update({'edgelist': guid_dict,
-                              'baitlist': guid_dict})
+            base_dict.update({CellmapsPPIDownloader.EDGELIST_FILEKEY: guid_dict,
+                              CellmapsPPIDownloader.BAITLIST_FILEKEY: guid_dict})
             return base_dict
 
         field_dict = ProvenanceUtil.example_dataset_provenance(requiredonly=requiredonly)
 
-        base_dict.update({'edgelist': field_dict,
-                          'baitlist': field_dict})
+        base_dict.update({CellmapsPPIDownloader.EDGELIST_FILEKEY: field_dict,
+                          CellmapsPPIDownloader.BAITLIST_FILEKEY: field_dict})
         return base_dict
 
     def _create_output_directory(self):
@@ -279,6 +279,44 @@ class CellmapsPPIDownloader(object):
                 for e in errors:
                     f.write(str(e) + '\n')
 
+    def get_apms_edgelist_file(self):
+        """
+
+        :return:
+        """
+        return os.path.join(self._outdir,
+                            CellmapsPPIDownloader.APMS_EDGELIST_FILE)
+
+    def _write_apms_network(self, edgelist=None,
+                            gene_node_attrs=None):
+        """
+
+        :param edgelist:
+        :param gene_node_attrs:
+        :return:
+        """
+        with open(self.get_apms_edgelist_file(), 'w', newline='') as f:
+            writer = csv.DictWriter(f, fieldnames=CellmapsPPIDownloader.APMS_EDGELIST_COLS, delimiter='\t')
+            writer.writeheader()
+            for edge in edgelist:
+                if edge['GeneID1'] not in gene_node_attrs:
+                    logger.error('Skipping ' + str(edge['GeneID1'] + ' cause it lacks a symbol'))
+                    continue
+                if edge['GeneID2'] not in gene_node_attrs:
+                    logger.error('Skipping ' + str(edge['GeneID2'] + ' cause it lacks a symbol'))
+                    continue
+
+                genea = gene_node_attrs[edge['GeneID1']]['name']
+                geneb = gene_node_attrs[edge['GeneID2']]['name']
+                if genea is None or geneb is None:
+                    logger.error('Skipping edge cause no symbol is found: ' + str(edge))
+                    continue
+                if len(genea) == 0 or len(geneb) == 0:
+                    logger.error('Skipping edge cause no symbol is found: ' + str(edge))
+                    continue
+                writer.writerow({CellmapsPPIDownloader.APMS_EDGELIST_COLS[0]: genea,
+                                 CellmapsPPIDownloader.APMS_EDGELIST_COLS[1]: geneb})
+
     def run(self):
         """
         Downloads APMS data to output directory specified in constructor
@@ -320,7 +358,7 @@ class CellmapsPPIDownloader(object):
             # Above registrations need to work for this to work
             # register computation
             # self._register_computation()
-
+            exitcode = 0
             return exitcode
         finally:
             self._end_time = int(time.time())
