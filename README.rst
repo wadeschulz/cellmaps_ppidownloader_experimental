@@ -32,7 +32,7 @@ Dependencies
 Compatibility
 -------------
 
-* Python 3.3+
+* Python 3.8+
 
 Installation
 ------------
