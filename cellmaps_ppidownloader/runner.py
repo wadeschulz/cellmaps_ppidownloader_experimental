@@ -24,11 +24,11 @@ class CellmapsPPIDownloader(object):
     """
     Class to run algorithm
     """
-    APMS_EDGELIST_FILE = 'apms_edgelist.tsv'
-    APMS_EDGELIST_COLS = ['geneA', 'geneB']
-    APMS_GENE_NODE_ATTR_FILE = 'apms_gene_node_attributes.tsv'
-    APMS_GENE_NODE_ERRORS_FILE = 'apms_gene_node_attributes.errors'
-    APMS_GENE_NODE_COLS = ['name', 'represents', 'ambiguous', 'bait']
+    PPI_EDGELIST_FILE = 'ppi_edgelist.tsv'
+    PPI_EDGELIST_COLS = ['geneA', 'geneB']
+    PPI_GENE_NODE_ATTR_FILE = 'ppi_gene_node_attributes.tsv'
+    PPI_GENE_NODE_ERRORS_FILE = 'ppi_gene_node_attributes.errors'
+    PPI_GENE_NODE_COLS = ['name', 'represents', 'ambiguous', 'bait']
 
     EDGELIST_FILEKEY = 'edgelist'
     BAITLIST_FILEKEY = 'baitlist'
@@ -143,7 +143,7 @@ class CellmapsPPIDownloader(object):
                      'version': cellmaps_ppidownloader.__version__,
                      'date-published': date.today().strftime('%m-%d-%Y')}
         self._apms_gene_attrid = self._provenance_utils.register_dataset(self._outdir,
-                                                                         source_file=self.get_apms_gene_node_attributes_file(),
+                                                                         source_file=self.get_ppi_gene_node_attributes_file(),
                                                                          data_dict=data_dict)
 
     def _add_dataset_to_crate(self, data_dict=None,
@@ -237,66 +237,66 @@ class CellmapsPPIDownloader(object):
                                        version=cellmaps_ppidownloader.__version__,
                                        data=data)
 
-    def get_apms_gene_node_attributes_file(self):
+    def get_ppi_gene_node_attributes_file(self):
         """
-        Gets full path to apms gene node attribute file under output directory
+        Gets full path to ppi gene node attribute file under output directory
         created when invoking :py:meth:`~cellmaps_downloader.runner.CellmapsPPIDownloader.run`
 
         :return: Path to file
         :rtype: str
         """
         return os.path.join(self._outdir,
-                            CellmapsPPIDownloader.APMS_GENE_NODE_ATTR_FILE)
+                            CellmapsPPIDownloader.PPI_GENE_NODE_ATTR_FILE)
 
-    def get_apms_gene_node_errors_file(self):
+    def get_ppi_gene_node_errors_file(self):
         """
-        Gets full path to apms gene node attribute errors file under output directory
+        Gets full path to ppi gene node attribute errors file under output directory
         created when invoking :py:meth:`~cellmaps_downloader.runner.CellmapsPPIDownloader.run`
 
         :return: Path to file
         :rtype: str
         """
         return os.path.join(self._outdir,
-                            CellmapsPPIDownloader.APMS_GENE_NODE_ERRORS_FILE)
+                            CellmapsPPIDownloader.PPI_GENE_NODE_ERRORS_FILE)
 
-    def _write_apms_gene_node_attrs(self, gene_node_attrs=None,
-                                    errors=None):
+    def _write_ppi_gene_node_attrs(self, gene_node_attrs=None,
+                                   errors=None):
         """
 
         :param gene_node_attrs:
         :param errors:
         :return:
         """
-        with open(self.get_apms_gene_node_attributes_file(), 'w', newline='') as f:
-            writer = csv.DictWriter(f, fieldnames=CellmapsPPIDownloader.APMS_GENE_NODE_COLS, delimiter='\t')
+        with open(self.get_ppi_gene_node_attributes_file(), 'w', newline='') as f:
+            writer = csv.DictWriter(f, fieldnames=CellmapsPPIDownloader.PPI_GENE_NODE_COLS, delimiter='\t')
 
             writer.writeheader()
             for key in gene_node_attrs:
                 writer.writerow(gene_node_attrs[key])
 
         if errors is not None:
-            with open(self.get_apms_gene_node_errors_file(), 'w') as f:
+            with open(self.get_ppi_gene_node_errors_file(), 'w') as f:
                 for e in errors:
                     f.write(str(e) + '\n')
 
-    def get_apms_edgelist_file(self):
+    def get_ppi_edgelist_file(self):
         """
 
         :return:
         """
         return os.path.join(self._outdir,
-                            CellmapsPPIDownloader.APMS_EDGELIST_FILE)
+                            CellmapsPPIDownloader.PPI_EDGELIST_FILE)
 
-    def _write_apms_network(self, edgelist=None,
-                            gene_node_attrs=None):
+    def _write_ppi_network(self, edgelist=None,
+                           gene_node_attrs=None):
         """
 
         :param edgelist:
         :param gene_node_attrs:
         :return:
         """
-        with open(self.get_apms_edgelist_file(), 'w', newline='') as f:
-            writer = csv.DictWriter(f, fieldnames=CellmapsPPIDownloader.APMS_EDGELIST_COLS, delimiter='\t')
+        with open(self.get_ppi_edgelist_file(), 'w', newline='') as f:
+            writer = csv.DictWriter(f, fieldnames=CellmapsPPIDownloader.PPI_EDGELIST_COLS, delimiter='\t')
             writer.writeheader()
             for edge in edgelist:
                 if edge['GeneID1'] not in gene_node_attrs:
@@ -314,12 +314,12 @@ class CellmapsPPIDownloader(object):
                 if len(genea) == 0 or len(geneb) == 0:
                     logger.error('Skipping edge cause no symbol is found: ' + str(edge))
                     continue
-                writer.writerow({CellmapsPPIDownloader.APMS_EDGELIST_COLS[0]: genea,
-                                 CellmapsPPIDownloader.APMS_EDGELIST_COLS[1]: geneb})
+                writer.writerow({CellmapsPPIDownloader.PPI_EDGELIST_COLS[0]: genea,
+                                 CellmapsPPIDownloader.PPI_EDGELIST_COLS[1]: geneb})
 
     def run(self):
         """
-        Downloads APMS data to output directory specified in constructor
+        Downloads ppi data to output directory specified in constructor
 
         :raises CellMapsPPIDownloaderError: If there is an error
         :return: 0 upon success, otherwise failure
@@ -343,11 +343,11 @@ class CellmapsPPIDownloader(object):
             gene_node_attrs, errors = self._apmsgen.get_gene_node_attributes()
 
             # write apms attribute data
-            self._write_apms_gene_node_attrs(gene_node_attrs, errors)
+            self._write_ppi_gene_node_attrs(gene_node_attrs, errors)
 
             # write apms network
-            self._write_apms_network(edgelist=self._apmsgen.get_apms_edgelist(),
-                                     gene_node_attrs=gene_node_attrs)
+            self._write_ppi_network(edgelist=self._apmsgen.get_apms_edgelist(),
+                                    gene_node_attrs=gene_node_attrs)
 
             # Todo: uncomment when fixed
             # register apms_gene_node_attrs fails due to this bug:
