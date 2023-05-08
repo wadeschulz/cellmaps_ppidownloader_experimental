@@ -3,6 +3,8 @@ import re
 import csv
 import logging
 import mygene
+from tqdm import tqdm
+
 from cellmaps_ppidownloader.exceptions import CellMapsPPIDownloaderError
 
 logger = logging.getLogger(__name__)
@@ -285,7 +287,11 @@ class APMSGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
                   list of str describing any errors encountered)
         :rtype: tuple
         """
+        t = tqdm(total=2, desc='Get updated gene symbols', unit='steps')
+
+        t.update()
         genelist, ambiguous_gene_dict = self._get_unique_genelist_from_edgelist()
+        t.update()
         query_res = self._genequery.get_symbols_for_genes(genelist=genelist)
         bait_set = self._get_apms_bait_set()
         errors = []
