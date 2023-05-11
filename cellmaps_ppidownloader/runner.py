@@ -13,6 +13,7 @@ from datetime import date
 import json
 from tqdm import tqdm
 from cellmaps_utils import logutils
+from cellmaps_utils import constants
 from cellmaps_utils.provenance import ProvenanceUtil
 import cellmaps_ppidownloader
 from cellmaps_ppidownloader.exceptions import CellMapsPPIDownloaderError
@@ -24,11 +25,6 @@ class CellmapsPPIDownloader(object):
     """
     Class to run algorithm
     """
-    PPI_EDGELIST_FILE = 'ppi_edgelist.tsv'
-    PPI_EDGELIST_COLS = ['geneA', 'geneB']
-    PPI_GENE_NODE_ATTR_FILE = 'ppi_gene_node_attributes.tsv'
-    PPI_GENE_NODE_ERRORS_FILE = 'ppi_gene_node_attributes.errors'
-    PPI_GENE_NODE_COLS = ['name', 'represents', 'ambiguous', 'bait']
 
     EDGELIST_FILEKEY = 'edgelist'
     BAITLIST_FILEKEY = 'baitlist'
@@ -246,7 +242,7 @@ class CellmapsPPIDownloader(object):
         :rtype: str
         """
         return os.path.join(self._outdir,
-                            CellmapsPPIDownloader.PPI_GENE_NODE_ATTR_FILE)
+                            constants.PPI_GENE_NODE_ATTR_FILE)
 
     def get_ppi_gene_node_errors_file(self):
         """
@@ -257,7 +253,7 @@ class CellmapsPPIDownloader(object):
         :rtype: str
         """
         return os.path.join(self._outdir,
-                            CellmapsPPIDownloader.PPI_GENE_NODE_ERRORS_FILE)
+                            constants.PPI_GENE_NODE_ERRORS_FILE)
 
     def _write_ppi_gene_node_attrs(self, gene_node_attrs=None,
                                    errors=None):
@@ -268,7 +264,7 @@ class CellmapsPPIDownloader(object):
         :return:
         """
         with open(self.get_ppi_gene_node_attributes_file(), 'w', newline='') as f:
-            writer = csv.DictWriter(f, fieldnames=CellmapsPPIDownloader.PPI_GENE_NODE_COLS, delimiter='\t')
+            writer = csv.DictWriter(f, fieldnames=constants.PPI_GENE_NODE_COLS, delimiter='\t')
 
             writer.writeheader()
             for key in gene_node_attrs:
@@ -285,7 +281,7 @@ class CellmapsPPIDownloader(object):
         :return:
         """
         return os.path.join(self._outdir,
-                            CellmapsPPIDownloader.PPI_EDGELIST_FILE)
+                            constants.PPI_EDGELIST_FILE)
 
     def _write_ppi_network(self, edgelist=None,
                            gene_node_attrs=None):
@@ -296,7 +292,7 @@ class CellmapsPPIDownloader(object):
         :return:
         """
         with open(self.get_ppi_edgelist_file(), 'w', newline='') as f:
-            writer = csv.DictWriter(f, fieldnames=CellmapsPPIDownloader.PPI_EDGELIST_COLS, delimiter='\t')
+            writer = csv.DictWriter(f, fieldnames=constants.PPI_EDGELIST_COLS, delimiter='\t')
             writer.writeheader()
             for edge in edgelist:
                 if edge['GeneID1'] not in gene_node_attrs:
@@ -314,8 +310,8 @@ class CellmapsPPIDownloader(object):
                 if len(genea) == 0 or len(geneb) == 0:
                     logger.error('Skipping edge cause no symbol is found: ' + str(edge))
                     continue
-                writer.writerow({CellmapsPPIDownloader.PPI_EDGELIST_COLS[0]: genea,
-                                 CellmapsPPIDownloader.PPI_EDGELIST_COLS[1]: geneb})
+                writer.writerow({constants.PPI_EDGELIST_COLS[0]: genea,
+                                 constants.PPI_EDGELIST_COLS[1]: geneb})
 
     def run(self):
         """
@@ -335,10 +331,7 @@ class CellmapsPPIDownloader(object):
             self._create_run_crate()
             self._register_input_datasets()
 
-            # Todo: uncomment when fixed
-            # register software fails due to this bug:
-            # https://github.com/fairscape/fairscape-cli/issues/7
-            # self._register_software()
+            self._register_software()
 
             gene_node_attrs, errors = self._apmsgen.get_gene_node_attributes()
 
@@ -349,15 +342,9 @@ class CellmapsPPIDownloader(object):
             self._write_ppi_network(edgelist=self._apmsgen.get_apms_edgelist(),
                                     gene_node_attrs=gene_node_attrs)
 
-            # Todo: uncomment when fixed
-            # register apms_gene_node_attrs fails due to this bug:
-            # https://github.com/fairscape/fairscape-cli/issues/6
-            # self._register_image_gene_node_attrs()
+            self._register_apms_gene_node_attrs()
 
-            # Todo: uncomment when above work
-            # Above registrations need to work for this to work
-            # register computation
-            # self._register_computation()
+            self._register_computation()
             exitcode = 0
             return exitcode
         finally:
