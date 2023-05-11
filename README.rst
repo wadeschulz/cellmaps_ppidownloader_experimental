@@ -6,8 +6,8 @@ cellmaps_ppidownloader
 .. image:: https://img.shields.io/pypi/v/cellmaps_ppidownloader.svg
         :target: https://pypi.python.org/pypi/cellmaps_ppidownloader
 
-.. image:: https://img.shields.io/travis/idekerlab/cellmaps_ppidownloader.svg
-        :target: https://travis-ci.com/idekerlab/cellmaps_ppidownloader
+.. image:: https://app.travis-ci.com/idekerlab/cellmaps_imagedownloader.svg?branch=main
+    :target: https://app.travis-ci.com/idekerlab/cellmaps_imagedownloader
 
 .. image:: https://readthedocs.org/projects/cellmaps-downloader/badge/?version=latest
         :target: https://cellmaps-ppidownloader.readthedocs.io/en/latest/?badge=latest
