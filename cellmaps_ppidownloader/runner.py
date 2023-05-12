@@ -88,7 +88,8 @@ class CellmapsPPIDownloader(object):
         :type with_ids: bool
         :return:
         """
-        base_dict = {'organization-name': 'Name of organization',
+        base_dict = {'name': 'Name for pipeline run',
+                     'organization-name': 'Name of organization',
                      'project-name': 'Name of project'}
         if with_ids is not None and with_ids is True:
             guid_dict = ProvenanceUtil.example_dataset_provenance(with_ids=with_ids)
@@ -169,7 +170,7 @@ class CellmapsPPIDownloader(object):
                                                     used_dataset=[self._baitlist_datasetid, self._edgelist_datasetid],
                                                     generated=[self._apms_gene_attrid])
 
-    def _create_run_crate(self):
+    def _create_rocrate(self):
         """
         Creates rocrate for output directory
 
@@ -177,7 +178,7 @@ class CellmapsPPIDownloader(object):
         """
         try:
             self._provenance_utils.register_rocrate(self._outdir,
-                                                    name='cellmaps_ppidownloader',
+                                                    name=self._provenance['name'],
                                                     organization_name=self._provenance['organization-name'],
                                                     project_name=self._provenance['project-name'])
         except TypeError as te:
@@ -328,7 +329,7 @@ class CellmapsPPIDownloader(object):
                                           handlerprefix='cellmaps_ppidownloader')
                 self._write_task_start_json()
 
-            self._create_run_crate()
+            self._create_rocrate()
             self._register_input_datasets()
 
             self._register_software()
