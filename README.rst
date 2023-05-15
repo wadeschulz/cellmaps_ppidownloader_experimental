@@ -16,7 +16,7 @@ cellmaps_ppidownloader
 
 
 
-Downloads IF and AP-MS data needed for CM4AI MuSIC pipeline
+Downloads AP-MS data needed for CM4AI MuSIC pipeline
 
 
 * Free software: MIT license
