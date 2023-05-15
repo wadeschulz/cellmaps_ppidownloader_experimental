@@ -162,7 +162,11 @@ class APMSGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
         self._genequery = genequery
 
     @staticmethod
-    def get_apms_edgelist_from_tsvfile(tsvfile=None):
+    def get_apms_edgelist_from_tsvfile(tsvfile=None,
+                                       geneid_one_col='GeneID1',
+                                       symbol_one_col='Symbol1',
+                                       geneid_two_col='GeneID2',
+                                       symbol_two_col='Symbol2'):
         """
         Generates list of dicts by parsing TSV file specified
         by **tsvfile** with the
@@ -188,14 +192,17 @@ class APMSGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
         with open(tsvfile, 'r') as f:
             reader = csv.DictReader(f, delimiter='\t')
             for row in reader:
-                edgelist.append({'GeneID1': row['GeneID1'],
-                                 'Symbol1': row['Symbol1'],
-                                 'GeneID2': row['GeneID2'],
-                                 'Symbol2': row['Symbol2']})
+                edgelist.append({'GeneID1': row[geneid_one_col],
+                                 'Symbol1': row[symbol_one_col],
+                                 'GeneID2': row[geneid_two_col],
+                                 'Symbol2': row[symbol_two_col]})
         return edgelist
 
     @staticmethod
-    def get_apms_baitlist_from_tsvfile(tsvfile=None):
+    def get_apms_baitlist_from_tsvfile(tsvfile=None,
+                                       symbol_col='GeneSymbol',
+                                       geneid_col='GeneID',
+                                       numinteractors_col='# Interactors'):
         """
         Generates list of dicts by parsing TSV file specified
         by **tsvfile** with the
@@ -220,9 +227,9 @@ class APMSGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
         with open(tsvfile, 'r') as f:
             reader = csv.DictReader(f, delimiter='\t')
             for row in reader:
-                edgelist.append({'GeneSymbol': row['GeneSymbol'],
-                                 'GeneID': row['GeneID'],
-                                 'NumInteractors': row['# Interactors']})
+                edgelist.append({'GeneSymbol': row[symbol_col],
+                                 'GeneID': row[geneid_col],
+                                 'NumInteractors': row[numinteractors_col]})
         return edgelist
 
     def get_apms_edgelist(self):

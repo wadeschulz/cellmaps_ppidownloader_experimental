@@ -34,10 +34,24 @@ def _parse_arguments(desc, args):
                         help='APMS edgelist TSV file in format of:\n'
                              'GeneID1\tSymbol1\tGeneID2\tSymbol2\n'
                              '10159\tATP6AP2\t2\tA2M')
+    parser.add_argument('--edgelist_geneid_one_col', default='GeneID1',
+                        help='Name of column containing ensemble Gene ID 1 in --edgelist file')
+    parser.add_argument('--edgelist_symbol_one_col', default='Symbol1',
+                        help='Name of column containing Gene Symbol 1 in --edgelist file')
+    parser.add_argument('--edgelist_geneid_two_col', default='GeneID2',
+                        help='Name of column containing ensemble Gene ID 2 in --edgelist file')
+    parser.add_argument('--edgelist_symbol_two_col', default='Symbol2',
+                        help='Name of column containing Gene Symbol 2 in --edgelist file')
     parser.add_argument('--baitlist',
                         help='APMS baitlist TSV file in format of:\n'
                              'GeneSymbol\tGeneID\t# Interactors\n'
                              '"ADA"\t"100"\t1.')
+    parser.add_argument('--baitlist_symbol_col', default='GeneSymbol',
+                        help='Name of column containing Gene Symbol in --baitlist file')
+    parser.add_argument('--baitlist_geneid_col', default='GeneID',
+                        help='Name of column containing ensemble Gene ID in --baitlist file')
+    parser.add_argument('--baitlist_numinteractors_col', default='# Interactors',
+                        help='Name of column containing # of interactors in --baitlist file')
     parser.add_argument('--provenance',
                         help='Path to file containing provenance '
                              'information about input files in JSON format. '
@@ -139,8 +153,15 @@ Additional optional fields for registering datasets include
             json_prov = json.load(f)
 
         apmsgen = APMSGeneNodeAttributeGenerator(
-            apms_edgelist=APMSGeneNodeAttributeGenerator.get_apms_edgelist_from_tsvfile(theargs.edgelist),
-            apms_baitlist=APMSGeneNodeAttributeGenerator.get_apms_baitlist_from_tsvfile(theargs.baitlist))
+            apms_edgelist=APMSGeneNodeAttributeGenerator.get_apms_edgelist_from_tsvfile(theargs.edgelist,
+                                                                                        geneid_one_col=theargs.edgelist_geneid_one_col,
+                                                                                        symbol_one_col=theargs.edgelist_symbol_one_col,
+                                                                                        geneid_two_col=theargs.edgelist_geneid_two_col,
+                                                                                        symbol_two_col=theargs.edgelist_symbol_two_col),
+            apms_baitlist=APMSGeneNodeAttributeGenerator.get_apms_baitlist_from_tsvfile(theargs.baitlist,
+                                                                                        symbol_col=theargs.baitlist_symbol_col,
+                                                                                        geneid_col=theargs.baitlist_geneid_col,
+                                                                                        numinteractors_col=theargs.baitlist_numinteractors_col))
 
         return CellmapsPPIDownloader(outdir=theargs.outdir,
                                      apmsgen=apmsgen,
