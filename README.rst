@@ -42,7 +42,7 @@ Installation
    git clone https://github.com/idekerlab/cellmaps_ppidownloader
    cd cellmaps_ppidownloader
    make dist
-   pip install dist/cellmaps_ppidownloadercmd*whl
+   pip install dist/cellmaps_ppidownloader*whl
 
 
 Run **make** command with no arguments to see other build/deploy options including creation of Docker image 
