@@ -12,6 +12,8 @@ Cell Maps for AI PPI Downloader
 Downloads Affinity-Purification mass spectrometry (AP-MS) data as a Protein-Protein Interaction
 network used in the pipeline for `Cell Maps for AI (CM4AI) <https://cm4ai.org>`__
 
+
+
 * Free software: MIT license
 
 
