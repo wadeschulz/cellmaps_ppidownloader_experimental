@@ -1,28 +1,24 @@
-=========================
-cellmaps_ppidownloader
-=========================
+================================
+Cell Maps for AI PPI Downloader
+================================
 
 
 .. image:: https://img.shields.io/pypi/v/cellmaps_ppidownloader.svg
         :target: https://pypi.python.org/pypi/cellmaps_ppidownloader
 
-.. image:: https://app.travis-ci.com/idekerlab/cellmaps_imagedownloader.svg?branch=main
-    :target: https://app.travis-ci.com/idekerlab/cellmaps_imagedownloader
+.. image:: https://app.travis-ci.com/idekerlab/cellmaps_ppidownloader.svg?branch=main
+    :target: https://app.travis-ci.com/idekerlab/cellmaps_ppidownloader
 
-.. image:: https://readthedocs.org/projects/cellmaps-downloader/badge/?version=latest
+.. image:: https://readthedocs.org/projects/cellmaps-ppidownloader/badge/?version=latest
         :target: https://cellmaps-ppidownloader.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
 
-
-
-
-Downloads AP-MS data needed for CM4AI MuSIC pipeline
+Downloads Affinity-Purification mass spectrometry (AP-MS) data as a Protein-Protein Interaction
+network used in the pipeline for `Cell Maps for AI (CM4AI) <https://cm4ai.org>`__
 
 
 * Free software: MIT license
 * Documentation: https://cellmaps-ppidownloader.readthedocs.io.
-
-
 
 Dependencies
 ------------
