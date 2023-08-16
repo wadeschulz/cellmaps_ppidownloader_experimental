@@ -90,7 +90,10 @@ class CellmapsPPIDownloader(object):
         """
         base_dict = {'name': 'Name for pipeline run',
                      'organization-name': 'Name of organization',
-                     'project-name': 'Name of project'}
+                     'project-name': 'Name of project',
+                     'cell-line': 'Name of cell line. Ex: U2OS',
+                     'treatment': 'Name of treatment, Ex: untreated',
+                     'release': 'Name of release. Example: 0.1 alpha'}
         if with_ids is not None and with_ids is True:
             guid_dict = ProvenanceUtil.example_dataset_provenance(with_ids=with_ids)
             base_dict.update({CellmapsPPIDownloader.EDGELIST_FILEKEY: guid_dict,
@@ -102,6 +105,41 @@ class CellmapsPPIDownloader(object):
         base_dict.update({CellmapsPPIDownloader.EDGELIST_FILEKEY: field_dict,
                           CellmapsPPIDownloader.BAITLIST_FILEKEY: field_dict})
         return base_dict
+
+    def _update_provenance_with_keywords(self):
+        """
+        Generates appropriate keywords from provenance data set in constructor
+
+        :return: keywords as str values
+        :rtype: list
+        """
+        if self._provenance is None:
+            logger.warning('Provenance is None')
+            return
+        keywords = []
+        for key in ['organization-name', 'project-name', 'release',
+                    'cell-line', 'treatment', 'name']:
+            if key in self._provenance:
+                keywords.append(self._provenance[key])
+        keywords.extend(['AP-MS edgelist download'])
+        self._provenance['keywords'] = keywords
+
+    def _update_provenance_with_description(self):
+        """
+        Gets description from provenance
+        :return:
+        """
+        if self._provenance is None:
+            logger.warning('Provenance is None')
+            return
+        desc = ''
+        for key in ['project-name', 'name', 'release',
+                    'cell-line', 'treatment']:
+            if key in self._provenance:
+                if desc != '':
+                    desc += ' '
+                desc += self._provenance[key]
+        self._provenance['description'] = desc + ' AP-MS Edgelist'
 
     def _create_output_directory(self):
         """
@@ -120,12 +158,18 @@ class CellmapsPPIDownloader(object):
 
         :raises CellMapsProvenanceError: If fairscape call fails
         """
+        software_keywords = self._provenance['keywords']
+        software_keywords.extend(['tools', cellmaps_ppidownloader.__name__])
+        software_description = self._provenance['description'] + \
+                               ' ' + \
+                               cellmaps_ppidownloader.__description__
         self._softwareid = self._provenance_utils.register_software(self._outdir,
                                                                     name=cellmaps_ppidownloader.__name__,
-                                                                    description=cellmaps_ppidownloader.__description__,
+                                                                    description=software_description,
                                                                     author=cellmaps_ppidownloader.__author__,
                                                                     version=cellmaps_ppidownloader.__version__,
-                                                                    file_format='.py',
+                                                                    file_format='py',
+                                                                    keywords=software_keywords,
                                                                     url=cellmaps_ppidownloader.__repo_url__)
 
     def _register_apms_gene_node_attrs(self):
@@ -133,10 +177,13 @@ class CellmapsPPIDownloader(object):
         Registers image_gene_node_attributes.tsv file with create as a dataset
 
         """
+        keywords = self._provenance['keywords']
+        keywords.extend(['gene', 'attributes', 'file'])
+        description = self._provenance['description'] + ' AP-MS gene node attributes file'
         data_dict = {'name': cellmaps_ppidownloader.__name__ + ' output file',
-                     'description': 'APMS gene node attributes file',
+                     'description': description,
                      'data-format': 'tsv',
-                     'author': '',
+                     'author': cellmaps_ppidownloader.__author__,
                      'version': cellmaps_ppidownloader.__version__,
                      'date-published': date.today().strftime('%m-%d-%Y')}
         self._apms_gene_attrid = self._provenance_utils.register_dataset(self._outdir,
@@ -161,11 +208,15 @@ class CellmapsPPIDownloader(object):
 
         :return:
         """
+        keywords = self._provenance['keywords']
+        keywords.extend(['computation', 'download'])
+        description = self._provenance['description'] + ' run of ' + cellmaps_ppidownloader.__name__
         self._provenance_utils.register_computation(self._outdir,
                                                     name=cellmaps_ppidownloader.__name__ + ' computation',
                                                     run_by=str(self._provenance_utils.get_login()),
                                                     command=str(self._input_data_dict),
-                                                    description='run of ' + cellmaps_ppidownloader.__name__,
+                                                    description=description,
+                                                    keywords=keywords,
                                                     used_software=[self._softwareid],
                                                     used_dataset=[self._baitlist_datasetid, self._edgelist_datasetid],
                                                     generated=[self._apms_gene_attrid])
@@ -180,7 +231,9 @@ class CellmapsPPIDownloader(object):
             self._provenance_utils.register_rocrate(self._outdir,
                                                     name=self._provenance['name'],
                                                     organization_name=self._provenance['organization-name'],
-                                                    project_name=self._provenance['project-name'])
+                                                    project_name=self._provenance['project-name'],
+                                                    description=self._provenance['description'],
+                                                    keywords=self._provenance['keywords'])
         except TypeError as te:
             raise CellMapsPPIDownloaderError('Invalid provenance: ' + str(te))
         except KeyError as ke:
@@ -329,6 +382,8 @@ class CellmapsPPIDownloader(object):
                                           handlerprefix='cellmaps_ppidownloader')
                 self._write_task_start_json()
 
+            self._update_provenance_with_description()
+            self._update_provenance_with_keywords()
             self._create_rocrate()
             self._register_input_datasets()
 
