@@ -65,7 +65,7 @@ master_doc = 'index'
 # General information about the project.
 project = u'cellmaps_ppidownloader'
 copyright = u"2023, The Regents of the University of California"
-author = u"Gege Qian"
+author = u"Christopher Churas"
 
 # The version info for the project you're documenting, acts as replacement
 # for |version| and |release|, also used in various other places throughout
@@ -131,7 +131,7 @@ html_theme = 'sphinx_rtd_theme'
 # -- Options for HTMLHelp output ---------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'cellmaps_imagedownloaderdoc'
+htmlhelp_basename = 'cellmaps_ppidownloaderdoc'
 
 
 # -- Options for LaTeX output ------------------------------------------

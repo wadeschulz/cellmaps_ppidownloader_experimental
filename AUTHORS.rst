@@ -2,10 +2,12 @@
 Credits
 =======
 
-Development Lead
+Developers
 ----------------
 
-* Gege Qian <geqian@ucsd.edu>
+* Leah Schaffer <lvschaffer@health.ucsd.edu>
+
+* Christopher Churas <cchuras@ucsd.edu>
 
 Contributors
 ------------

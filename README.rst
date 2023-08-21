@@ -6,8 +6,8 @@ cellmaps_ppidownloader
 .. image:: https://img.shields.io/pypi/v/cellmaps_ppidownloader.svg
         :target: https://pypi.python.org/pypi/cellmaps_ppidownloader
 
-.. image:: https://app.travis-ci.com/idekerlab/cellmaps_imagedownloader.svg?branch=main
-    :target: https://app.travis-ci.com/idekerlab/cellmaps_imagedownloader
+.. image:: https://app.travis-ci.com/idekerlab/cellmaps_ppidownloader.svg?branch=main
+    :target: https://app.travis-ci.com/idekerlab/cellmaps_ppidownloader
 
 .. image:: https://readthedocs.org/projects/cellmaps-downloader/badge/?version=latest
         :target: https://cellmaps-ppidownloader.readthedocs.io/en/latest/?badge=latest
@@ -15,8 +15,7 @@ cellmaps_ppidownloader
 
 
 
-
-Downloads AP-MS data needed for CM4AI MuSIC pipeline
+Downloads protein-protein interaction data
 
 
 * Free software: MIT license
@@ -78,7 +77,9 @@ Output:
 Needed files
 ------------
 
-**TODO:** Add description of needed files
+* bait list file: TSV file of baits used for AP-MS experiments
+* edge list file: TSV file of edges for protein interaction network
+* provenance: file containing provenance information about input files in JSON format (see sample provenance file in examples folder)
 
 
 Usage
@@ -92,7 +93,7 @@ For information invoke :code:`cellmaps_ppidownloadercmd.py -h`
 
 .. code-block::
 
-   cellmaps_ppidownloadercmd.py # TODO Add other needed arguments here
+   cellmaps_ppidownloadercmd.py ./cellmaps_ppidownloader_outdir --edgelist examples/edgelist.tsv --baitlist examples/baitlist.tsv --provenance examples/provenance.json
 
 
 Via Docker
@@ -105,7 +106,7 @@ Via Docker
 
 .. code-block::
 
-   docker run -v `pwd`:`pwd` -w `pwd` idekerlab/cellmaps_ppidownloader:0.1.0 cellmaps_ppidownloadercmd.py # TODO Add other needed arguments here
+   docker run -v `pwd`:`pwd` -w `pwd` idekerlab/cellmaps_ppidownloader:0.1.0 cellmaps_ppidownloadercmd.py ./cellmaps_ppidownloader_outdir --edgelist examples/edgelist.tsv --baitlist examples/baitlist.tsv --provenance examples/provenance.json
 
 
 Credits
