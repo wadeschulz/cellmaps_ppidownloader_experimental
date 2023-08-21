@@ -2,38 +2,39 @@
 Usage
 =====
 
-This page should provide information on how to use cellmaps_imagedownloader
+This page should provide information on how to use cellmaps_ppidownloader
 
 In a project
 --------------
 
-To use cellmaps_imagedownloader in a project::
+To use cellmaps_ppidownloader in a project::
 
-    import cellmaps_imagedownloader
+    import cellmaps_ppidownloader
 
 On the command line
 ---------------------
 
-For information invoke :code:`cellmaps_imagedownloadercmd.py -h`
+For information invoke :code:`cellmaps_ppidownloadercmd.py -h`
 
 **Example usage**
 
-**TODO:** Add information about example usage
+The PPI downloader requires the following input files: 
+
+1) bait list file: TSV file of baits used for AP-MS experiments
+2) edge list file: TSV file of edges for protein interaction network
+3) provenance: file containing provenance information about input files in JSON format (see sample provenance file in examples folder)
 
 .. code-block::
 
-   cellmaps_imagedownloadercmd.py # TODO Add other needed arguments here
+   cellmaps_ppidownloadercmd.py ./cellmaps_ppidownloader_outdir --edgelist examples/edgelist.tsv --baitlist examples/baitlist.tsv --provenance examples/provenance.json
 
 Via Docker
 ---------------
 
 **Example usage**
 
-**TODO:** Add information about example usage
-
-
 .. code-block::
 
-   docker run -v `pwd`:`pwd` -w `pwd` idekerlab/cellmaps_imagedownloader:0.1.0 cellmaps_imagedownloadercmd.py # TODO Add other needed arguments here
+   docker run -v `pwd`:`pwd` -w `pwd` idekerlab/cellmaps_ppidownloadercmd:0.1.0 cellmaps_ppidownloadercmd.py ./cellmaps_ppidownloader_outdir --edgelist examples/edgelist.tsv --baitlist examples/baitlist.tsv --provenance examples/provenance.json
 
 

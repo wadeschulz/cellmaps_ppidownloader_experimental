@@ -1,37 +1,37 @@
-cellmaps\_imagedownloader package
+cellmaps\_ppidownloader package
 =================================
 
 Submodules
 ----------
 
-cellmaps\_imagedownloader.cellmaps\_imagedownloadercmd module
+cellmaps\_ppidownloader.cellmaps\_ppidownloadercmd module
 -------------------------------------------------------------
 
-.. automodule:: cellmaps_imagedownloader.cellmaps_imagedownloadercmd
+.. automodule:: cellmaps_ppidownloader.cellmaps_ppidownloadercmd
    :members:
    :undoc-members:
    :show-inheritance:
 
-cellmaps\_imagedownloader.exceptions module
+cellmaps\_ppidownloader.exceptions module
 -------------------------------------------
 
-.. automodule:: cellmaps_imagedownloader.exceptions
+.. automodule:: cellmaps_ppidownloader.exceptions
    :members:
    :undoc-members:
    :show-inheritance:
 
-cellmaps\_imagedownloader.gene module
+cellmaps\_ppidownloader.gene module
 -------------------------------------
 
-.. automodule:: cellmaps_imagedownloader.gene
+.. automodule:: cellmaps_ppidownloader.gene
    :members:
    :undoc-members:
    :show-inheritance:
 
-cellmaps\_imagedownloader.runner module
+cellmaps\_ppidownloader.runner module
 ---------------------------------------
 
-.. automodule:: cellmaps_imagedownloader.runner
+.. automodule:: cellmaps_ppidownloader.runner
    :members:
    :undoc-members:
    :show-inheritance:
@@ -39,7 +39,7 @@ cellmaps\_imagedownloader.runner module
 Module contents
 ---------------
 
-.. automodule:: cellmaps_imagedownloader
+.. automodule:: cellmaps_ppidownloader
    :members:
    :undoc-members:
    :show-inheritance:
