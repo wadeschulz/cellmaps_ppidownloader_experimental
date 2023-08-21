@@ -1,6 +1,6 @@
-=========================
-cellmaps_ppidownloader
-=========================
+================================
+Cell Maps for AI PPI Downloader
+================================
 
 
 .. image:: https://img.shields.io/pypi/v/cellmaps_ppidownloader.svg
@@ -9,10 +9,9 @@ cellmaps_ppidownloader
 .. image:: https://app.travis-ci.com/idekerlab/cellmaps_ppidownloader.svg?branch=main
     :target: https://app.travis-ci.com/idekerlab/cellmaps_ppidownloader
 
-.. image:: https://readthedocs.org/projects/cellmaps-downloader/badge/?version=latest
+.. image:: https://readthedocs.org/projects/cellmaps-ppidownloader/badge/?version=latest
         :target: https://cellmaps-ppidownloader.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
-
 
 
 Downloads protein-protein interaction data
@@ -20,8 +19,6 @@ Downloads protein-protein interaction data
 
 * Free software: MIT license
 * Documentation: https://cellmaps-ppidownloader.readthedocs.io.
-
-
 
 Dependencies
 ------------
@@ -41,7 +38,7 @@ Installation
    git clone https://github.com/idekerlab/cellmaps_ppidownloader
    cd cellmaps_ppidownloader
    make dist
-   pip install dist/cellmaps_ppidownloadercmd*whl
+   pip install dist/cellmaps_ppidownloader*whl
 
 
 Run **make** command with no arguments to see other build/deploy options including creation of Docker image 
