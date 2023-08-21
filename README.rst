@@ -86,8 +86,6 @@ For information invoke :code:`cellmaps_ppidownloadercmd.py -h`
 
 **Example usage**
 
-**TODO:** Add information about example usage
-
 .. code-block::
 
    cellmaps_ppidownloadercmd.py ./cellmaps_ppidownloader_outdir --edgelist examples/edgelist.tsv --baitlist examples/baitlist.tsv --provenance examples/provenance.json
@@ -97,9 +95,6 @@ Via Docker
 ~~~~~~~~~~~~~~~~~~~~~~
 
 **Example usage**
-
-**TODO:** Add information about example usage
-
 
 .. code-block::
 
