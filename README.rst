@@ -23,7 +23,10 @@ Downloads protein-protein interaction data
 Dependencies
 ------------
 
-* TODO add
+* `cellmaps_utils <https://pypi.org/project/cellmaps-utils>`__
+* `requests <https://pypi.org/project/requests>`__
+* `mygene <https://pypi.org/project/mygene>`__
+* `tqdm <https://pypi.org/project/tqdm>`__
 
 Compatibility
 -------------
