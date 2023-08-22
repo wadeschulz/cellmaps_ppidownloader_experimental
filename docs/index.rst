@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 Welcome to cellmaps_ppidownloader's documentation!
 ================================================================
 =======
@@ -21,8 +20,6 @@ Downloads Affinity-Purification mass spectrometry (AP-MS) data as a Protein-Prot
 network used in the pipeline for `Cell Maps for AI (CM4AI) <https://cm4ai.org>`__
 
 
-
->>>>>>> f05849313c88356426daa08f71263970dbce2cc3
 * Free software: MIT license
 
 
