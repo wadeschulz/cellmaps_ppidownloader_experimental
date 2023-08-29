@@ -93,7 +93,8 @@ class CellmapsPPIDownloader(object):
                      'project-name': 'Name of project',
                      'cell-line': 'Name of cell line. Ex: U2OS',
                      'treatment': 'Name of treatment, Ex: untreated',
-                     'release': 'Name of release. Example: 0.1 alpha'}
+                     'release': 'Name of release. Example: 0.1 alpha',
+                     'gene-set': 'Name of gene set. Example chromatin'}
         if with_ids is not None and with_ids is True:
             guid_dict = ProvenanceUtil.example_dataset_provenance(with_ids=with_ids)
             base_dict.update({CellmapsPPIDownloader.EDGELIST_FILEKEY: guid_dict,
@@ -118,7 +119,7 @@ class CellmapsPPIDownloader(object):
             return
         keywords = []
         for key in ['organization-name', 'project-name', 'release',
-                    'cell-line', 'treatment', 'name']:
+                    'cell-line', 'treatment', 'name', 'gene-set']:
             if key in self._provenance:
                 keywords.append(self._provenance[key])
         keywords.extend(['AP-MS edgelist download'])
@@ -134,7 +135,7 @@ class CellmapsPPIDownloader(object):
             return
         desc = ''
         for key in ['project-name', 'name', 'release',
-                    'cell-line', 'treatment']:
+                    'cell-line', 'treatment', 'gene-set']:
             if key in self._provenance:
                 if desc != '':
                     desc += ' '
