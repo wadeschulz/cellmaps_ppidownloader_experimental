@@ -114,7 +114,7 @@ class CellmapsPPIDownloader(object):
             return
         keywords = []
         for key in ['organization-name', 'project-name', 'release',
-                    'cell-line', 'treatment', 'name', 'gene-set']:
+                    'cell-line', 'treatment', 'gene-set', 'name']:
             if key in self._provenance:
                 keywords.append(self._provenance[key])
         keywords.extend(['AP-MS edgelist download'])
@@ -208,7 +208,7 @@ class CellmapsPPIDownloader(object):
         keywords.extend(['computation', 'download'])
         description = self._provenance['description'] + ' run of ' + cellmaps_ppidownloader.__name__
         self._provenance_utils.register_computation(self._outdir,
-                                                    name=cellmaps_ppidownloader.__name__ + ' computation',
+                                                    name=cellmaps_ppidownloader.__computation_name__,
                                                     run_by=str(self._provenance_utils.get_login()),
                                                     command=str(self._input_data_dict),
                                                     description=description,
