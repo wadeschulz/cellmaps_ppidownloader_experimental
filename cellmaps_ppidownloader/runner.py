@@ -259,18 +259,22 @@ class CellmapsPPIDownloader(object):
             return
 
         if self._edgelist_datasetid is None:
-            # write file and add samples dataset
-            self._edgelist_datasetid = self._add_dataset_to_crate(data_dict=self._provenance[CellmapsPPIDownloader.EDGELIST_FILEKEY],
-                                                                  source_file=self._input_data_dict[CellmapsPPIDownloader.EDGELIST_FILEKEY],
-                                                                  skip_copy=False)
-            logger.debug('Edgelist dataset id: ' + str(self._edgelist_datasetid))
+            if CellmapsPPIDownloader.EDGELIST_FILEKEY in self._input_data_dict and\
+                 self._input_data_dict[CellmapsPPIDownloader.EDGELIST_FILEKEY] is not None:
+                # write file and add samples dataset
+                self._edgelist_datasetid = self._add_dataset_to_crate(data_dict=self._provenance[CellmapsPPIDownloader.EDGELIST_FILEKEY],
+                                                                      source_file=self._input_data_dict[CellmapsPPIDownloader.EDGELIST_FILEKEY],
+                                                                      skip_copy=False)
+                logger.debug('Edgelist dataset id: ' + str(self._edgelist_datasetid))
 
         if self._baitlist_datasetid is None:
-            # write file and add unique dataset
-            self._baitlist_datasetid = self._add_dataset_to_crate(data_dict=self._provenance[CellmapsPPIDownloader.BAITLIST_FILEKEY],
-                                                                  source_file=self._input_data_dict[CellmapsPPIDownloader.BAITLIST_FILEKEY],
-                                                                  skip_copy=False)
-            logger.debug('Baitlist dataset id: ' + str(self._baitlist_datasetid))
+            if CellmapsPPIDownloader.BAITLIST_FILEKEY in self._input_data_dict and\
+                 self._input_data_dict[CellmapsPPIDownloader.BAITLIST_FILEKEY] is not None:
+                # write file and add unique dataset
+                self._baitlist_datasetid = self._add_dataset_to_crate(data_dict=self._provenance[CellmapsPPIDownloader.BAITLIST_FILEKEY],
+                                                                      source_file=self._input_data_dict[CellmapsPPIDownloader.BAITLIST_FILEKEY],
+                                                                      skip_copy=False)
+                logger.debug('Baitlist dataset id: ' + str(self._baitlist_datasetid))
 
     def _write_task_start_json(self):
         """

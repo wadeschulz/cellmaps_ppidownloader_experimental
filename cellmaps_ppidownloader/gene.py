@@ -332,3 +332,241 @@ class APMSGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
 
         return gene_node_attrs, errors
 
+
+class CM4AIGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
+    """
+    Creates APMS Gene Node Attributes table from CM4AI data
+    """
+
+    def __init__(self, apms_edgelist=None,
+                 genequery=GeneQuery()):
+        """
+        Constructor
+
+        :param apms_edgelist: list of dict elements where each
+                              dict is of format:
+
+                              .. code-block::
+                                  {'Bait': VAL,
+                                   'Prey': VAL,
+                                   'logOddsScore': VAL,
+                                   'FoldChange.x': VAL,
+                                   'BFDR.x': VAL}
+        :type apms_edgelist: list
+        :param genequery:
+        """
+        super().__init__()
+        self._raw_apms_edgelist = apms_edgelist
+        self._apms_edgelist = None
+        self._genequery = genequery
+
+    @staticmethod
+    def get_apms_edgelist_from_tsvfile(tsvfile=None,
+                                       bait_col='Bait',
+                                       prey_col='Prey',
+                                       bfdr_col=None,
+                                       foldchange_col=None,
+                                       foldchange_cutoff=0.0,
+                                       bfdr_maxcutoff=0.05):
+        """
+        Generates list of dicts by parsing TSV file specified
+        by **tsvfile** with the
+        format header column and corresponding values:
+
+        .. code-block::
+
+            Bait\tPrey\tBFDR.x\tFoldChange.x
+
+        .. note::
+
+           If BFDR.x column does not exist, no BFDR filtering will occur
+           Same goes if FoldChange.x column does not exist
+
+        :param tsvfile: Path to TSV file with above format
+        :type tsvfile: str
+        :param bait_col: Name of bait column
+        :type bait_col: str
+        :param prey_col: Name of prey column
+        :type prey_col: str
+        :param bfdr_col: Name of BFDR aka false discovery rate column
+                         If ``None`` no BFDR filtering will occur
+        :type bfdr_col: str
+        :param foldchange_col: Name of FoldChange column
+                               If ``None`` no FoldChange filtering will occur
+        :type foldchange_col: str
+        :param foldchange_cutoff: Foldchange cutoff. Only keep rows with
+                                  values greater then this value.
+                                  If this value is ``None`` no filtering
+                                  will occur
+        :type foldchange_cutoff: float
+        :param bfdr_maxcutoff: BFDR cutoff. Only keep rows with BFDR
+                               less then or equal to this value.
+                               If this value is ``None`` no filtering will
+                               occur
+        :type bfdr_maxcutoff: float
+        :return: list of dicts, with each dict of format:
+
+                 .. code-block::
+
+                      {'Bait': VAL,
+                       'Prey': VAL}
+        :rtype: list
+        """
+        edgelist = []
+        with open(tsvfile, 'r') as f:
+            reader = csv.DictReader(f, delimiter='\t')
+            for row in reader:
+                if bfdr_col is not None and bfdr_col in row\
+                     and row[bfdr_col] > bfdr_maxcutoff:
+                    continue
+                if foldchange_col is not None and foldchange_col in row\
+                     and row[foldchange_col] <= foldchange_cutoff:
+                    continue
+                edgelist.append({'Bait': row[bait_col],
+                                 'Prey': row[prey_col]})
+        return edgelist
+
+    def _get_unique_set_from_raw_edgelist(self, colname=None):
+        """
+        Given a column name **colname** extract unique set of values from
+        raw apms edgelist passed in via constructor
+
+        :return:
+        :rtype: set
+        """
+        col_set = set()
+        for entry in self._raw_apms_edgelist:
+            col_set.add(entry[colname])
+        return col_set
+
+    def _get_baits_to_ensemblsymbolmap(self):
+        """
+        Get unique set of bait names from raw apms edgelist
+        and query mygene to get symbols and ensembl gene ids
+
+        :return: original bait name to mapped to tuple
+                 (id, symbol, ensembl gene id)
+        :rtype: dict
+        """
+        bait_set = self._get_unique_set_from_raw_edgelist('Bait')
+        res = self._genequery.get_symbols_for_genes(list(bait_set),
+                                                    scopes='symbol')
+        bait_to_id = {}
+        for entry in res:
+
+            bait_to_id[entry['query']] = (entry['_id'],
+                                          entry['symbol'],
+                                          entry['ensembl']['gene'])
+        return bait_to_id
+
+    def _get_prey_to_ensemblsymbolmap(self):
+        """
+        Get unique set of prey names from raw apms edgelist
+        and query mygene to get symbols and ensembl gene ids
+
+        :return: original bait name to mapped to tuple
+                 (id, symbol, ensembl gene id)
+        :rtype: dict
+        """
+        prey_set = self._get_unique_set_from_raw_edgelist('Prey')
+        res = self._genequery.get_symbols_for_genes(list(prey_set),
+                                                    scopes='uniprot')
+        prey_to_id = {}
+        for entry in res:
+            ensemblstr = ''
+            if 'ensembl' not in entry:
+                logger.error(str(entry) + ' no ensembl found')
+                continue
+            if isinstance(entry['ensembl'], list):
+                ensemblstr += ';'.join([g['gene'] for g in entry['ensembl']])
+            else:
+                ensemblstr = entry['ensembl']['gene']
+            prey_to_id[entry['query']] = (entry['_id'],
+                                          entry['symbol'],
+                                          ensemblstr)
+        return prey_to_id
+
+    def get_apms_edgelist(self):
+        """
+        Gets apms edgelist
+
+        :return:
+        :rtype: list
+        """
+        if self._apms_edgelist is not None:
+            return self._apms_edgelist
+
+        # we need to generate this list
+        baits_to_idmap = self._get_baits_to_ensemblsymbolmap()
+
+        prey_set = self._get_unique_set_from_raw_edgelist('Prey')
+
+        prey_to_idmap = self._get_prey_to_ensemblsymbolmap()
+        self._apms_edgelist = []
+        for row in self._raw_apms_edgelist:
+            if row['Bait'] not in baits_to_idmap:
+                logger.warning('Bait ' + str(row['Bait']) + ' not in map. Skipping')
+                continue
+            if row['Prey'] not in prey_to_idmap:
+                logger.warning('Prey ' + str(row['Prey'] + ' not in map. Skipping'))
+                continue
+            bait_tuple = baits_to_idmap[row['Bait']]
+            prey_tuple = prey_to_idmap[row['Prey']]
+            self._apms_edgelist.append({'GeneID1': bait_tuple[0],
+                                        'Symbol1': bait_tuple[1],
+                                        'Ensembl1': bait_tuple[2],
+                                        'GeneID2': prey_tuple[0],
+                                        'Symbol2': prey_tuple[1],
+                                        'Ensembl2': prey_tuple[2]})
+        return self._apms_edgelist
+
+    def _get_apms_bait_set(self):
+        """
+        Gets unique set of baits
+
+        :return:
+        :rtype: set
+        """
+        bait_set = set()
+        for entry in self._apms_baitlist:
+            bait_set.add(entry['GeneID'])
+        return bait_set
+
+    def get_gene_node_attributes(self):
+        """
+        Gene gene node attributes which is output as a list of
+        dicts in this format:
+
+        .. code-block::
+
+            { 'GENEID': { 'name': 'GENESYMBOL',
+                          'represents': 'ensemble:ENSEMBLID1;ENSEMBLID2..',
+                          'ambiguous': 'ALTERNATE GENEs',
+                          'bait': True or False}
+            }
+
+
+
+        :return: (list of dicts containing gene node attributes,
+                  list of str describing any errors encountered)
+        :rtype: tuple
+        """
+        self.get_apms_edgelist()
+        errors = []
+        gene_node_attrs = {}
+        for i in ['1', '2']:
+            if 'i' == 1:
+                bait = True
+            else:
+                bait = False
+            for x in self._apms_edgelist:
+                if x['GeneID' + i] in gene_node_attrs:
+                    continue
+                ensemblstr = 'ensembl:' + x['Ensembl' + i]
+                gene_node_attrs[x['GeneID' + i]] = {'name': x['Symbol' + i],
+                                                    'represents': ensemblstr,
+                                                    'ambiguous': '',
+                                                    'bait': bait}
+
+        return gene_node_attrs, errors
+

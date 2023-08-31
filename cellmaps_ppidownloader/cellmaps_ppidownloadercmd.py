@@ -11,6 +11,7 @@ from cellmaps_utils import constants
 import cellmaps_ppidownloader
 from cellmaps_ppidownloader.runner import CellmapsPPIDownloader
 from cellmaps_ppidownloader.gene import APMSGeneNodeAttributeGenerator
+from cellmaps_ppidownloader.gene import CM4AIGeneNodeAttributeGenerator
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +31,11 @@ def _parse_arguments(desc, args):
                                      formatter_class=constants.ArgParseFormatter)
     parser.add_argument('outdir',
                         help='Directory to write results to')
+    parser.add_argument('--cm4ai_table',
+                        help='apms.tsv TSV file from CM4AI RO-Crate that has '
+                             'at least the following columns: '
+                             'Bait    Prey    logOddsScore    FoldChange.x    '
+                             'BFDR.x')
     parser.add_argument('--edgelist',
                         help='APMS edgelist TSV file in format of:\n'
                              'GeneID1\tSymbol1\tGeneID2\tSymbol2\n'
@@ -98,7 +104,11 @@ def main(args):
     desc = """
 Version {version}
 
-Loads APMS data specified by --edgelist and --baitlist flags
+Supports loading of AP-MS data in Bioplex format via 
+--edgelist and --baitlist flags
+or in CM4AI format via --cm4ai_table flag
+
+For bioplex data:
 
 To use pass in a TSV edgelist file to --edgelist
 
@@ -112,6 +122,10 @@ The --baitlist flag should be given a TSV file containing APMS baits
 Format of TSV file:
 
 TODO
+
+For CM4AI data:
+
+To use pass in a CM4AI tsv file stored in RO-CRATE via --cm4ai_table flag
 
 In addition, the --provenance flag is required and must be set to a path 
 to a JSON file. 
@@ -152,16 +166,19 @@ Additional optional fields for registering datasets include
         with open(theargs.provenance, 'r') as f:
             json_prov = json.load(f)
 
-        apmsgen = APMSGeneNodeAttributeGenerator(
-            apms_edgelist=APMSGeneNodeAttributeGenerator.get_apms_edgelist_from_tsvfile(theargs.edgelist,
-                                                                                        geneid_one_col=theargs.edgelist_geneid_one_col,
-                                                                                        symbol_one_col=theargs.edgelist_symbol_one_col,
-                                                                                        geneid_two_col=theargs.edgelist_geneid_two_col,
-                                                                                        symbol_two_col=theargs.edgelist_symbol_two_col),
-            apms_baitlist=APMSGeneNodeAttributeGenerator.get_apms_baitlist_from_tsvfile(theargs.baitlist,
-                                                                                        symbol_col=theargs.baitlist_symbol_col,
-                                                                                        geneid_col=theargs.baitlist_geneid_col,
-                                                                                        numinteractors_col=theargs.baitlist_numinteractors_col))
+        if theargs.cm4ai_table is None:
+            apmsgen = APMSGeneNodeAttributeGenerator(
+                apms_edgelist=APMSGeneNodeAttributeGenerator.get_apms_edgelist_from_tsvfile(theargs.edgelist,
+                                                                                            geneid_one_col=theargs.edgelist_geneid_one_col,
+                                                                                            symbol_one_col=theargs.edgelist_symbol_one_col,
+                                                                                            geneid_two_col=theargs.edgelist_geneid_two_col,
+                                                                                            symbol_two_col=theargs.edgelist_symbol_two_col),
+                apms_baitlist=APMSGeneNodeAttributeGenerator.get_apms_baitlist_from_tsvfile(theargs.baitlist,
+                                                                                            symbol_col=theargs.baitlist_symbol_col,
+                                                                                            geneid_col=theargs.baitlist_geneid_col,
+                                                                                            numinteractors_col=theargs.baitlist_numinteractors_col))
+        else:
+            apmsgen = CM4AIGeneNodeAttributeGenerator(apms_edgelist=CM4AIGeneNodeAttributeGenerator.get_apms_edgelist_from_tsvfile(theargs.cm4ai_table))
 
         return CellmapsPPIDownloader(outdir=theargs.outdir,
                                      apmsgen=apmsgen,
