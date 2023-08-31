@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
 import argparse
+import os
 import sys
 import logging
 import logging.config
@@ -178,6 +179,7 @@ Additional optional fields for registering datasets include
                                                                                             geneid_col=theargs.baitlist_geneid_col,
                                                                                             numinteractors_col=theargs.baitlist_numinteractors_col))
         else:
+            json_prov[CellmapsPPIDownloader.CM4AI_ROCRATE] = os.path.abspath(os.path.dirname(theargs.cm4ai_table))
             apmsgen = CM4AIGeneNodeAttributeGenerator(apms_edgelist=CM4AIGeneNodeAttributeGenerator.get_apms_edgelist_from_tsvfile(theargs.cm4ai_table))
 
         return CellmapsPPIDownloader(outdir=theargs.outdir,

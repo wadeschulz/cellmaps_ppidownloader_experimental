@@ -555,7 +555,7 @@ class CM4AIGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
         errors = []
         gene_node_attrs = {}
         for i in ['1', '2']:
-            if 'i' == 1:
+            if i == '1':
                 bait = True
             else:
                 bait = False
