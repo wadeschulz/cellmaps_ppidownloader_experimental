@@ -129,8 +129,8 @@ class CellmapsPPIDownloader(object):
             logger.warning('Provenance is None')
             return
         desc = ''
-        for key in ['project-name', 'name', 'release',
-                    'cell-line', 'treatment', 'gene-set']:
+        for key in ['organization-name', 'project-name', 'release',
+                    'cell-line', 'treatment', 'gene-set', 'name']:
             if key in self._provenance:
                 if desc != '':
                     desc += ' '
@@ -181,7 +181,7 @@ class CellmapsPPIDownloader(object):
                      'data-format': 'tsv',
                      'author': cellmaps_ppidownloader.__author__,
                      'version': cellmaps_ppidownloader.__version__,
-                     'date-published': date.today().strftime('%m-%d-%Y')}
+                     'date-published': date.today().strftime(self._provenance_utils.get_default_date_format_str())}
         self._apms_gene_attrid = self._provenance_utils.register_dataset(self._outdir,
                                                                          source_file=self.get_ppi_gene_node_attributes_file(),
                                                                          data_dict=data_dict)
