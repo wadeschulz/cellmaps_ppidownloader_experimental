@@ -29,6 +29,7 @@ network used in the pipeline for `Cell Maps for AI (CM4AI) <https://cm4ai.org>`_
 
    installation
    usage
+   outputs
    modules
    developer
    authors
