@@ -70,7 +70,7 @@ def _parse_arguments(desc, args):
                              'logging.config.html#logging-config-fileformat '
                              'Setting this overrides -v parameter which uses '
                              ' default logger. (default None)')
-    parser.add_argument('--skip_logging', type=_str2bool, default=True,
+    parser.add_argument('--skip_logging', action='store_true',
                         help='If set, output.log, error.log and '
                              'task_#_start/finish.json '
                              'files will not be created')
@@ -86,14 +86,6 @@ def _parse_arguments(desc, args):
                                  cellmaps_ppidownloader.__version__))
 
     return parser.parse_args(args)
-
-def _str2bool(v):
-    if v.lower() in ('yes', 'true', 't', 'y', '1'):
-        return True
-    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
-        return False
-    else:
-        raise argparse.ArgumentTypeError('Boolean value expected.')
 
 
 def main(args):
@@ -113,7 +105,7 @@ def main(args):
     desc = """
 Version {version}
 
-Supports loading of AP-MS data in Bioplex format via
+Supports loading of AP-MS data in Bioplex format via 
 --edgelist and --baitlist flags
 or in CM4AI format via --cm4ai_table flag
 
@@ -125,8 +117,8 @@ Format of TSV file:
 
 TODO
 
-The --baitlist flag should be given a TSV file containing APMS baits
-
+The --baitlist flag should be given a TSV file containing APMS baits 
+ 
 
 Format of TSV file:
 
@@ -136,8 +128,8 @@ For CM4AI data:
 
 To use pass in a CM4AI tsv file stored in RO-CRATE via --cm4ai_table flag
 
-In addition, the --provenance flag is required and must be set to a path
-to a JSON file.
+In addition, the --provenance flag is required and must be set to a path 
+to a JSON file. 
 
 If datasets are already registered with FAIRSCAPE then the following is sufficient:
 
@@ -147,9 +139,9 @@ If datasets are NOT registered, then the following is required:
 
 {register}
 
-Additional optional fields for registering datasets include
+Additional optional fields for registering datasets include 
 'url', 'used-by', 'associated-publication', and 'additional-documentation'
-
+    
 
     """.format(version=cellmaps_ppidownloader.__version__,
                withguids=withguids_json,
