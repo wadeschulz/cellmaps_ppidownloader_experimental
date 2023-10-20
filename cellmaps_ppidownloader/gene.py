@@ -347,6 +347,7 @@ class CM4AIGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
                               dict is of format:
 
                               .. code-block::
+
                                   {'Bait': VAL,
                                    'Prey': VAL,
                                    'logOddsScore': VAL,
