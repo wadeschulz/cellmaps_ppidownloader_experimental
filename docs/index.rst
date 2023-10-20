@@ -1,6 +1,3 @@
-Welcome to cellmaps_ppidownloader's documentation!
-================================================================
-=======
 ================================
 Cell Maps for AI PPI Downloader
 ================================
@@ -8,16 +5,11 @@ Cell Maps for AI PPI Downloader
 .. image:: https://img.shields.io/pypi/v/cellmaps_ppidownloader.svg
         :target: https://pypi.python.org/pypi/cellmaps_ppidownloader
 
-.. image:: https://img.shields.io/travis/idekerlab/cellmaps_ppidownloader.svg
-        :target: https://travis-ci.com/idekerlab/cellmaps_ppidownloader
+.. image:: https://app.travis-ci.com/idekerlab/cellmaps_ppidownloader.svg?branch=main
+    :target: https://app.travis-ci.com/idekerlab/cellmaps_ppidownloader
 
-
-Downloads protein-protein interaction data
-
-
-=======
 Downloads Affinity-Purification mass spectrometry (AP-MS) data as a Protein-Protein Interaction
-network used in the pipeline for `Cell Maps for AI (CM4AI) <https://cm4ai.org>`__
+network
 
 
 * Free software: MIT license
