@@ -224,12 +224,13 @@ class APMSGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
         :rtype: list
         """
         edgelist = []
-        with open(tsvfile, 'r') as f:
-            reader = csv.DictReader(f, delimiter='\t')
-            for row in reader:
-                edgelist.append({'GeneSymbol': row[symbol_col],
-                                 'GeneID': row[geneid_col],
-                                 'NumInteractors': row[numinteractors_col]})
+        if tsvfile is not None:
+            with open(tsvfile, 'r') as f:
+                reader = csv.DictReader(f, delimiter='\t')
+                for row in reader:
+                    edgelist.append({'GeneSymbol': row[symbol_col],
+                                     'GeneID': row[geneid_col],
+                                     'NumInteractors': row[numinteractors_col]})
         return edgelist
 
     def get_apms_edgelist(self):
