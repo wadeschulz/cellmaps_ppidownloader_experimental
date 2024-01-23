@@ -78,3 +78,29 @@ class TestIntegrationCellmaps_downloader(unittest.TestCase):
 
         finally:
             shutil.rmtree(temp_dir)
+
+    def test_download_with_only_edgelist(self):
+        """Tests parse arguments"""
+        temp_dir = tempfile.mkdtemp()
+        try:
+            edgelist = self.get_edgelist()
+            run_dir = os.path.join(temp_dir, 'run')
+            provenance = self.get_test_provenance()
+            res = cellmaps_ppidownloadercmd.main(['myprog.py', run_dir,
+                                                  '--edgelist', edgelist,
+                                                  '--provenance', provenance,
+                                                  '--skip_logging'])
+            self.assertEqual(0, res)
+            ppi_edgelist = os.path.join(run_dir, 'ppi_edgelist.tsv')
+            self.assertTrue(os.path.isfile(ppi_edgelist))
+            entries = []
+            with open(ppi_edgelist, 'r', newline='') as f:
+                reader = csv.DictReader(f, delimiter='\t')
+                for row in reader:
+                    entries.append(row)
+            self.assertEqual(2783, len(entries))
+
+        finally:
+            shutil.rmtree(temp_dir)
+
+
