@@ -74,10 +74,17 @@ class TestIntegrationCellmaps_downloader(unittest.TestCase):
                 reader = csv.DictReader(f, delimiter='\t')
                 for row in reader:
                     entries.append(row)
+
             self.assertEqual(2783, len(entries))
+            self.assertEqual({'geneA': 'PIK3CA-DT', 'geneB': 'MED19'},
+                             entries[0], 'If symbol changes this may fail')
+            self.assertEqual({'geneA': 'PIK3CA-DT', 'geneB': 'IVNS1ABP'},
+                             entries[2782], 'If symbol changes this may fail')
+
+            # Todo: add more checks on the results
 
         finally:
-            shutil.rmtree(temp_dir)
+                shutil.rmtree(temp_dir)
 
     def test_download_with_only_edgelist(self):
         """Tests parse arguments"""
@@ -99,6 +106,12 @@ class TestIntegrationCellmaps_downloader(unittest.TestCase):
                 for row in reader:
                     entries.append(row)
             self.assertEqual(2783, len(entries))
+            self.assertEqual({'geneA': 'PIK3CA-DT', 'geneB': 'MED19'},
+                             entries[0], 'If symbol changes this may fail')
+            self.assertEqual({'geneA': 'PIK3CA-DT', 'geneB': 'IVNS1ABP'},
+                             entries[2782], 'If symbol changes this may fail')
+
+            # Todo: add more checks on the results
 
         finally:
             shutil.rmtree(temp_dir)
