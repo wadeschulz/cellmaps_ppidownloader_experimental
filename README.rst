@@ -13,6 +13,10 @@ Cell Maps for AI PPI Downloader
         :target: https://cellmaps-ppidownloader.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
 
+.. image:: https://zenodo.org/badge/636892648.svg
+        :target: https://zenodo.org/doi/10.5281/zenodo.10607408
+        :alt: Zenodo DOI badge
+
 
 Downloads protein-protein interaction data
 
