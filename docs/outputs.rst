@@ -10,21 +10,40 @@ Output files and directories
 
 - ``baitlist.tsv``
     This file contains information about the bait proteins used in the affinity purification-mass spectrometry (AP-MS) process.
+    (from input, not always generated)
 
 - ``edgelist.tsv``
     An edge list representation of the protein-protein interactions. Each row in this file represents an interaction between two proteins.
+    (from input, not always generated)
 
 - ``ppi_edgelist.tsv``
     A processed edge list file which represents protein-protein interactions, where proteins are identified by their symbols.
 
+.. code-block::
+
+    geneA	geneB
+    DNMT3A	SAP18
+    DNMT3A	DDX3X
+    DNMT3A	SEC16A
+    DNMT3A	U2SURP
+    DNMT3A	SYNJ2
+
 - ``ppi_gene_node_attributes.tsv``
     Contains attributes for each gene node in the protein-protein interaction network. This includes information like gene names, ensembl ID, and other relevant data.
 
-- ``ppi_gene_node_attributes.errors``
-    If there are any errors encountered while processing the gene node attributes, they will be logged in this file.
+.. code-block::
+
+    name	represents	ambiguous	bait
+    DNMT3A	ensembl:ENSG00000119772		TRUE
+    HDAC2	ensembl:ENSG00000196591		TRUE
+    KDM6A	ensembl:ENSG00000147050		TRUE
+    SMARCA4	ensembl:ENSG00000127616		TRUE
 
 Logs and Metadata
 -----------------
+
+- ``ppi_gene_node_attributes.errors``
+    If there are any errors encountered while processing the gene node attributes, they will be logged in this file.
 
 - ``output.log``
     Log file detailing the operational logs of the script. Useful for understanding the flow of operations and debugging any issues.
