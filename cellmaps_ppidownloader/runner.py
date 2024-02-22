@@ -181,6 +181,7 @@ class CellmapsPPIDownloader(object):
                      'data-format': 'tsv',
                      'author': cellmaps_ppidownloader.__author__,
                      'version': cellmaps_ppidownloader.__version__,
+                     'schema': 'https://raw.githubusercontent.com/fairscape/cm4ai-schemas/main/v0.1.0/cm4ai_schema_apmsloader_ppi_gene_node_attributes.json',
                      'date-published': date.today().strftime(self._provenance_utils.get_default_date_format_str())}
         self._apms_gene_attrid = self._provenance_utils.register_dataset(self._outdir,
                                                                          source_file=self.get_ppi_gene_node_attributes_file(),
