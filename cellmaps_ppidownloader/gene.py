@@ -1,4 +1,3 @@
-
 import re
 import csv
 import logging
@@ -14,6 +13,7 @@ class GeneQuery(object):
     """
     Gets information about genes from mygene
     """
+
     def __init__(self, mygeneinfo=mygene.MyGeneInfo()):
         """
         Constructor
@@ -23,7 +23,6 @@ class GeneQuery(object):
     def querymany(self, queries, species=None,
                   scopes=None,
                   fields=None):
-
         """
         Simple wrapper that calls MyGene querymany
         returning the results
@@ -78,6 +77,7 @@ class GeneNodeAttributeGenerator(object):
     """
     Base class for GeneNodeAttribute Generator
     """
+
     def __init__(self):
         """
         Constructor
@@ -302,34 +302,54 @@ class APMSGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
         t.update()
         query_res = self._genequery.get_symbols_for_genes(genelist=genelist)
         bait_set = self._get_apms_bait_set()
+
         errors = []
-        gene_node_attrs = {}
+        query_symbol_dict = {}
+        symbol_query_dict = {}
+        symbol_ensembl_dict = {}
         for x in query_res:
             if 'symbol' not in x:
-                errors.append('Skipping ' + str(x) +
-                              ' no symbol in query result: ' + str(x))
-                logger.error(errors[-1])
-                continue
+                symbol = x['query']
+            else:
+                symbol = x['symbol']
 
-            ensemblstr = 'ensembl:'
             if 'ensembl' not in x:
                 errors.append('Skipping ' + str(x) +
                               ' no ensembl in query result: ' + str(x))
                 logger.error(errors[-1])
                 continue
+
+            if x['query'] in query_symbol_dict:
+                continue  # duplicate query, just take first result
+            query_symbol_dict[x['query']] = symbol
+
+            if symbol not in symbol_query_dict:
+                symbol_query_dict[symbol] = set()
+            symbol_query_dict[symbol].add(x['query'])
+
+            if symbol not in symbol_ensembl_dict:
+                symbol_ensembl_dict[symbol] = set()
+
             if len(x['ensembl']) > 1:
-                ensemblstr += ';'.join([g['gene'] for g in x['ensembl']])
+                for g in x['ensembl']:
+                    symbol_ensembl_dict[x['symbol']].add(g['gene'])
             else:
-                ensemblstr += x['ensembl']['gene']
+                symbol_ensembl_dict[x['symbol']].add(x['ensembl']['gene'])
 
+        gene_node_attrs = {}
+        for symbol in symbol_query_dict:
+
+            # TODO: verify what to do here
             ambiguous_str = ''
-            if x['symbol'] in ambiguous_gene_dict:
-                ambiguous_str = ambiguous_gene_dict[x['symbol']]
+            if symbol in ambiguous_gene_dict:
+                ambiguous_str = ambiguous_gene_dict[symbol]
 
-            gene_node_attrs[x['query']] = {'name': x['symbol'],
-                                           'represents': ensemblstr,
-                                           'ambiguous': ambiguous_str,
-                                           'bait': x['query'] in bait_set}
+            ensemble_str = ','.join(sorted(symbol_ensembl_dict[symbol]))
+
+            gene_node_attrs[symbol] = {'name': symbol,
+                                       'represents': ensemble_str,
+                                       'ambiguous': ambiguous_str,
+                                       'bait': symbol_query_dict[symbol] in bait_set}
 
         return gene_node_attrs, errors
 
@@ -418,11 +438,11 @@ class CM4AIGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
         with open(tsvfile, 'r') as f:
             reader = csv.DictReader(f, delimiter='\t')
             for row in reader:
-                if bfdr_col is not None and bfdr_col in row\
-                     and row[bfdr_col] > bfdr_maxcutoff:
+                if bfdr_col is not None and bfdr_col in row \
+                    and row[bfdr_col] > bfdr_maxcutoff:
                     continue
-                if foldchange_col is not None and foldchange_col in row\
-                     and row[foldchange_col] <= foldchange_cutoff:
+                if foldchange_col is not None and foldchange_col in row \
+                    and row[foldchange_col] <= foldchange_cutoff:
                     continue
                 edgelist.append({'Bait': row[bait_col],
                                  'Prey': row[prey_col]})
@@ -455,7 +475,6 @@ class CM4AIGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
                                                     scopes='symbol')
         bait_to_id = {}
         for entry in res:
-
             bait_to_id[entry['query']] = (entry['_id'],
                                           entry['symbol'],
                                           entry['ensembl']['gene'])
@@ -571,4 +590,3 @@ class CM4AIGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
                                                     'bait': bait}
 
         return gene_node_attrs, errors
-
