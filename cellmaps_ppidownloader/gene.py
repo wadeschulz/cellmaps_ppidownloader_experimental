@@ -358,7 +358,7 @@ class APMSGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
             gene_node_attrs[symbol] = {'name': symbol,
                                        'represents': ensemble_str,
                                        'ambiguous': ambiguous_str,
-                                       'bait': symbol_query_dict[symbol] in bait_set}
+                                       'bait': symbol in bait_set}
         return gene_node_attrs
 
     def get_gene_node_attributes(self):
