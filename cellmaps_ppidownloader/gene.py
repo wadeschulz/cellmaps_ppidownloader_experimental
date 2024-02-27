@@ -326,9 +326,11 @@ class APMSGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
 
             if len(x['ensembl']) > 1:
                 for g in x['ensembl']:
-                    symbol_ensembl_dict[x['symbol']].add(g['gene'])
+                    symbol_ensembl_dict[symbol].add(g['gene'])
             else:
-                symbol_ensembl_dict[x['symbol']].add(x['ensembl']['gene'])
+                symbol_ensembl_dict[symbol].add(x['ensembl']['gene'])
+
+        return query_symbol_dict, symbol_query_dict, symbol_ensembl_dict, errors
 
     def _create_gene_node_attributes_dict(self, symbol_query_dict, symbol_ensembl_dict, bait_set, ambiguous_gene_dict):
         """
