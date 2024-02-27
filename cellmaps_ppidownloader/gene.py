@@ -277,32 +277,26 @@ class APMSGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
             bait_set.add(entry['GeneID'])
         return bait_set
 
-    def get_gene_node_attributes(self):
+    def _process_query_results(self, query_res):
         """
-        Gene gene node attributes which is output as a list of
-        dicts in this format:
+        Processes the results from a gene symbol query, organizing the data into mappings
+        between queries, symbols, and Ensembl IDs, while capturing errors for any entries
+        that lack necessary information.
 
-        .. code-block::
+        This method iterates over the query results, constructing three main dictionaries:
+        - A mapping from query strings to the corresponding gene name or query (if symbol is missing).
+        - A mapping from gene name to sets of queries that resulted in those symbols (maps gene name back to query
+        gene node attributes and filters it by GENE SYMBOL, column has associated ensembl ID(s) to keep track).
+        - A mapping from gene n to sets of associated Ensembl IDs.
 
-            { 'GENEID': { 'name': 'GENESYMBOL',
-                          'represents': 'ensemble:ENSEMBLID1;ENSEMBLID2..',
-                          'ambiguous': 'ALTERNATE GENEs' }
-            }
+        Entries without an 'ensembl' field are skipped, and an error is logged for each skipped entry.
 
-
-
-        :return: (list of dicts containing gene node attributes,
-                  list of str describing any errors encountered)
-        :rtype: tuple
+        :param query_res: A list of dictionaries, each representing a query result.
+        :type query_res: list
+        :return: A tuple containing mappings of query to symbol, symbol to queries, symbol to Ensembl IDs,
+                and a list of errors.
+        :rtype: (dict, dict, dict, list)
         """
-        t = tqdm(total=2, desc='Get updated gene symbols', unit='steps')
-
-        t.update()
-        genelist, ambiguous_gene_dict = self._get_unique_genelist_from_edgelist()
-        t.update()
-        query_res = self._genequery.get_symbols_for_genes(genelist=genelist)
-        bait_set = self._get_apms_bait_set()
-
         errors = []
         query_symbol_dict = {}
         symbol_query_dict = {}
@@ -336,6 +330,19 @@ class APMSGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
             else:
                 symbol_ensembl_dict[x['symbol']].add(x['ensembl']['gene'])
 
+    def _create_gene_node_attributes_dict(self, symbol_query_dict, symbol_ensembl_dict, bait_set, ambiguous_gene_dict):
+        """
+        Compiles gene node attributes into a dictionary based on several mappings and the fold.
+        It loops through unique gene symbols, make gene nodes attribute dictionary that contains
+        gene symbol, ensembl ids, antibodies, ambiguous gene symbols and image filenames.
+
+        :param symbol_query_dict: Mapping of gene symbols to their queries.
+        :param symbol_ensembl_dict: Mapping of gene symbols to Ensembl IDs.
+        :param bait_set: Set with boolean values, indicating bait proteins with True
+        :param ambiguous_gene_dict: Mapping of ambiguous genes.
+        :return: A dictionary of gene node attributes.
+        :rtype: dict
+        """
         gene_node_attrs = {}
         for symbol in symbol_query_dict:
 
@@ -350,6 +357,38 @@ class APMSGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
                                        'represents': ensemble_str,
                                        'ambiguous': ambiguous_str,
                                        'bait': symbol_query_dict[symbol] in bait_set}
+        return gene_node_attrs
+
+    def get_gene_node_attributes(self):
+        """
+        Gene gene node attributes which is output as a list of
+        dicts in this format:
+
+        .. code-block::
+
+            { 'GENEID': { 'name': 'GENESYMBOL',
+                          'represents': 'ensemble:ENSEMBLID1;ENSEMBLID2..',
+                          'ambiguous': 'ALTERNATE GENEs' }
+            }
+
+
+
+        :return: (list of dicts containing gene node attributes,
+                  list of str describing any errors encountered)
+        :rtype: tuple
+        """
+        t = tqdm(total=2, desc='Get updated gene symbols', unit='steps')
+
+        t.update()
+        genelist, ambiguous_gene_dict = self._get_unique_genelist_from_edgelist()
+        t.update()
+        query_res = self._genequery.get_symbols_for_genes(genelist=genelist)
+        bait_set = self._get_apms_bait_set()
+
+        query_symbol_dict, symbol_query_dict, symbol_ensembl_dict, errors = self._process_query_results(query_res)
+
+        gene_node_attrs = self._create_gene_node_attributes_dict(symbol_query_dict, symbol_ensembl_dict,
+                                                                 bait_set, ambiguous_gene_dict)
 
         return gene_node_attrs, errors
 
