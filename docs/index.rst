@@ -25,6 +25,7 @@ network
 
    installation
    usage
+   inputs
    outputs
    modules
    developer
