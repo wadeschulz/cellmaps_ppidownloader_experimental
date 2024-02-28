@@ -380,19 +380,21 @@ class APMSGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
         :rtype: tuple
         """
         t = tqdm(total=2, desc='Get updated gene symbols', unit='steps')
+        try:
+            t.update()
+            genelist, ambiguous_gene_dict = self._get_unique_genelist_from_edgelist()
+            t.update()
+            query_res = self._genequery.get_symbols_for_genes(genelist=genelist)
+            bait_set = self._get_apms_bait_set()
 
-        t.update()
-        genelist, ambiguous_gene_dict = self._get_unique_genelist_from_edgelist()
-        t.update()
-        query_res = self._genequery.get_symbols_for_genes(genelist=genelist)
-        bait_set = self._get_apms_bait_set()
+            query_symbol_dict, symbol_query_dict, symbol_ensembl_dict, errors = self._process_query_results(query_res)
 
-        query_symbol_dict, symbol_query_dict, symbol_ensembl_dict, errors = self._process_query_results(query_res)
+            gene_node_attrs = self._create_gene_node_attributes_dict(symbol_query_dict, symbol_ensembl_dict,
+                                                                     bait_set, ambiguous_gene_dict)
 
-        gene_node_attrs = self._create_gene_node_attributes_dict(symbol_query_dict, symbol_ensembl_dict,
-                                                                 bait_set, ambiguous_gene_dict)
-
-        return gene_node_attrs, errors
+            return gene_node_attrs, errors
+        finally:
+            t.close()
 
 
 class CM4AIGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
