@@ -348,7 +348,6 @@ class APMSGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
         gene_node_attrs = {}
         for symbol in symbol_query_dict:
 
-            # TODO: verify what to do here
             ambiguous_str = ''
             if symbol in ambiguous_gene_dict:
                 ambiguous_str = ambiguous_gene_dict[symbol]
