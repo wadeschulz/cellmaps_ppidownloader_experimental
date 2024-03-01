@@ -11,6 +11,11 @@ Output files and directories
 
 - ``baitlist.tsv``
     This file contains information about the bait proteins used in the affinity purification-mass spectrometry (AP-MS) process.
+    It should contain following columns:
+
+    * GeneSymbol - the symbol of the gene encoding the bait protein.
+    * GeneID - the unique identifier for the gene in a specific database.
+    * # Interactors - the number of proteins that have been found to interact with the bait protein. These interactions are identified through the AP-MS process. For instance, in example below 2783 different proteins have been found to interact with the PIK3CA protein.
 
 **Example:**
 
@@ -21,6 +26,12 @@ Output files and directories
 
 - ``edgelist.tsv``
     An edge list representation of the protein-protein interactions. Each row in this file represents an interaction between two proteins.
+    It should contain following columns:
+
+    * GeneID1 - the unique identifier for the gene of the first protein in the interaction pair.
+    * Symbol1 - the gene symbol of the first protein in the interaction pair.
+    * GeneID2 - the unique identifier for the gene of the second protein in the interaction pair.
+    * Symbol2 - the gene symbol of the second protein in the interaction pair.
 
 **Example:**
 
@@ -35,6 +46,12 @@ Output files and directories
 
 - ``CM4AI_TABLE_PATH``:
     A `.tsv` file from CM4AI RO-Crate that should contain at least the following columns: Bait, Prey, logOddsScore, FoldChange.x, and BFDR.x.
+
+    * Bait: Name of the pulled down protein
+    * Prey: Uniprot ID number of identified proteins by MS in pull down (putative bait interactor).
+    * logOddsScore: Logarithm of the odds ratio between test and control conditions for each prey as a measure of interaction significance. The LogOddsScore is a statistical score that represents the logarithm of the odds ratio for a protein-protein interaction. It's used to quantify the strength and significance of the association between two proteins in an interaction network. The odds ratio compares the likelihood of the interaction occurring to the likelihood of it not occurring. Taking the logarithm of the odds ratio often helps to transform the score into a more symmetric and interpretable form, making it easier to compare and analyze the interactions. Higher LogOddsScores typically indicate stronger evidence for the interaction.
+    * FoldChange.x: represents the ratio of the abundance of a protein or interaction in one experimental condition (Test) compared to another (control). It helps assess whether the abundance of a protein changes significantly between different conditions.
+    * BFDR.x: Bayesian False Discovery Rate
 
 **Example:**
 
