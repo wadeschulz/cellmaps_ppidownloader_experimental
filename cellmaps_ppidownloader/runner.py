@@ -187,6 +187,24 @@ class CellmapsPPIDownloader(object):
                                                                          source_file=self.get_ppi_gene_node_attributes_file(),
                                                                          data_dict=data_dict)
 
+    def _register_ppi_edgelist(self):
+        """
+        Registers image_gene_node_attributes.tsv file with create as a dataset
+
+        """
+        keywords = self._provenance['keywords']
+        keywords.extend(['ppi', 'edgelist', 'file'])
+        description = self._provenance['description'] + ' AP-MS ppi edgelist file'
+        data_dict = {'name': cellmaps_ppidownloader.__name__ + ' ppi edgelist file',
+                     'description': description,
+                     'data-format': 'tsv',
+                     'author': cellmaps_ppidownloader.__author__,
+                     'version': cellmaps_ppidownloader.__version__,
+                     'schema': 'https://raw.githubusercontent.com/fairscape/cm4ai-schemas/main/v0.1.0/cm4ai_schema_apmsloader_ppi_edgelist.json',
+                     'date-published': date.today().strftime(self._provenance_utils.get_default_date_format_str())}
+        self._provenance_utils.register_dataset(self._outdir, source_file=self.get_ppi_edgelist_file(),
+                                                data_dict=data_dict)
+
     def _add_dataset_to_crate(self, data_dict=None,
                               source_file=None, skip_copy=True):
         """
@@ -407,6 +425,7 @@ class CellmapsPPIDownloader(object):
                                     gene_node_attrs=gene_node_attrs)
 
             self._register_apms_gene_node_attrs()
+            self._register_ppi_edgelist()
 
             self._register_computation()
             exitcode = 0
