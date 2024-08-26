@@ -17,7 +17,7 @@ network
 
 
 * Free software: MIT license
-
+* Source code: https://github.com/idekerlab/cellmaps_ppidownloader
 
 .. toctree::
    :maxdepth: 2
@@ -25,6 +25,7 @@ network
 
    installation
    usage
+   inputs
    outputs
    modules
    developer
