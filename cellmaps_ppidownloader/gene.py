@@ -323,7 +323,6 @@ class APMSGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
 
             if symbol not in symbol_ensembl_dict:
                 symbol_ensembl_dict[symbol] = set()
-
             if len(x['ensembl']) > 1:
                 for g in x['ensembl']:
                     symbol_ensembl_dict[symbol].add(g['gene'])
@@ -346,18 +345,19 @@ class APMSGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
         :rtype: dict
         """
         gene_node_attrs = {}
-        for symbol in symbol_query_dict:
-
-            ambiguous_str = ''
-            if symbol in ambiguous_gene_dict:
-                ambiguous_str = ambiguous_gene_dict[symbol]
+        for symbol, queries in symbol_query_dict.items():
 
             ensemble_str = ','.join(sorted(symbol_ensembl_dict[symbol]))
 
-            gene_node_attrs[symbol] = {'name': symbol,
-                                       'represents': ensemble_str,
-                                       'ambiguous': ambiguous_str,
-                                       'bait': symbol in bait_set}
+            for query in queries:
+                ambiguous_str = ''
+                if query in ambiguous_gene_dict:
+                    ambiguous_str = ambiguous_gene_dict[query]
+
+                gene_node_attrs[query] = {'name': symbol,
+                                          'represents': ensemble_str,
+                                          'ambiguous': ambiguous_str,
+                                          'bait': query in bait_set}
         return gene_node_attrs
 
     def get_gene_node_attributes(self):
