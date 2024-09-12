@@ -86,13 +86,13 @@ class TestAPMSGeneNodeAttributeGenerator(unittest.TestCase):
     def test_create_gene_node_attributes_dict(self):
         symbol_query_dict = {'Symbol1': {'Query1'}, 'Symbol2': {'Query2'}}
         symbol_ensembl_dict = {'Symbol1': {'ENSG000001'}, 'Symbol2': {'ENSG000002'}}
-        bait_set = {'Symbol1'}
-        ambiguous_gene_dict = {'Symbol2': 'Symbol2,Symbol3'}
+        bait_set = {'Query1'}
+        ambiguous_gene_dict = {'Query1': 'Symbol2,Symbol3'}
         gene_node_attrs = self.generator._create_gene_node_attributes_dict(
             symbol_query_dict, symbol_ensembl_dict, bait_set, ambiguous_gene_dict)
-        self.assertIn('Symbol1', gene_node_attrs)
-        self.assertTrue(gene_node_attrs['Symbol1']['bait'])
-        self.assertIn('Symbol2,Symbol3', gene_node_attrs['Symbol2']['ambiguous'])
+        self.assertIn('Query1', gene_node_attrs)
+        self.assertTrue(gene_node_attrs['Query1']['bait'])
+        self.assertIn('Symbol2,Symbol3', gene_node_attrs['Query1']['ambiguous'])
 
     def test_get_unique_genelist_from_edgelist(self):
         self.generator._apms_edgelist = [
