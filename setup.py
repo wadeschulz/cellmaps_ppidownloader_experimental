@@ -58,6 +58,7 @@ setup(
     name='cellmaps_ppidownloader',
     packages=find_packages(include=['cellmaps_ppidownloader']),
     package_dir={'cellmaps_ppidownloader': 'cellmaps_ppidownloader'},
+    package_data={'cellmaps_ppidownloader': ['readme_outputs.txt']},
     scripts=['cellmaps_ppidownloader/cellmaps_ppidownloadercmd.py'],
     setup_requires=setup_requirements,
     url=repo_url,

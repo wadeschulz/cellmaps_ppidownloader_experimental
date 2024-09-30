@@ -393,6 +393,17 @@ class CellmapsPPIDownloader(object):
                 writer.writerow({constants.PPI_EDGELIST_COLS[0]: genea,
                                  constants.PPI_EDGELIST_COLS[1]: geneb})
 
+    def generate_readme(self):
+        description = getattr(cellmaps_ppidownloader, '__description__', 'No description provided.')
+        version = getattr(cellmaps_ppidownloader, '__version__', '0.0.0')
+
+        with open(os.path.join(os.path.dirname(__file__), 'readme_outputs.txt'), 'r') as f:
+            readme_outputs = f.read()
+
+        readme = readme_outputs.format(DESCRIPTION=description, VERSION=version)
+        with open(os.path.join(self._outdir, 'README.txt'), 'w') as f:
+            f.write(readme)
+
     def run(self):
         """
         Downloads ppi data to output directory specified in constructor
@@ -407,6 +418,8 @@ class CellmapsPPIDownloader(object):
                 logutils.setup_filelogger(outdir=self._outdir,
                                           handlerprefix='cellmaps_ppidownloader')
             self._write_task_start_json()
+
+            self.generate_readme()
 
             self._update_provenance_with_description()
             self._update_provenance_with_keywords()
