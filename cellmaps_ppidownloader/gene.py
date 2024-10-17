@@ -129,6 +129,13 @@ class APMSGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
     """
     Creates APMS Gene Node Attributes table
     """
+    GENEID_COL1 = 'GeneID1'
+    GENEID_COL2 = 'GeneID2'
+    SYMBOL_COL1 = 'Symbol1'
+    SYMBOL_COL2 = 'Symbol2'
+    BAITLIST_GENE_SYMBOL = 'GeneSymbol'
+    BAITLIST_GENE_ID = 'GeneID'
+    BAITLIST_NUM_INTERACTORS = '# Interactors'
 
     def __init__(self, apms_edgelist=None, apms_baitlist=None,
                  genequery=GeneQuery()):
@@ -163,10 +170,10 @@ class APMSGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
 
     @staticmethod
     def get_apms_edgelist_from_tsvfile(tsvfile=None,
-                                       geneid_one_col='GeneID1',
-                                       symbol_one_col='Symbol1',
-                                       geneid_two_col='GeneID2',
-                                       symbol_two_col='Symbol2'):
+                                       geneid_one_col=GENEID_COL1,
+                                       symbol_one_col=SYMBOL_COL1,
+                                       geneid_two_col=GENEID_COL2,
+                                       symbol_two_col=SYMBOL_COL2):
         """
         Generates list of dicts by parsing TSV file specified
         by **tsvfile** with the
@@ -200,9 +207,9 @@ class APMSGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
 
     @staticmethod
     def get_apms_baitlist_from_tsvfile(tsvfile=None,
-                                       symbol_col='GeneSymbol',
-                                       geneid_col='GeneID',
-                                       numinteractors_col='# Interactors'):
+                                       symbol_col=BAITLIST_GENE_SYMBOL,
+                                       geneid_col=BAITLIST_GENE_ID,
+                                       numinteractors_col=BAITLIST_NUM_INTERACTORS):
         """
         Generates list of dicts by parsing TSV file specified
         by **tsvfile** with the

@@ -66,6 +66,13 @@ class CellmapsPPIDownloader(object):
         self._provenance_utils = provenance_utils
         self.skip_failed = skip_failed
 
+        if self._input_data_dict is None or not self._input_data_dict:
+            self._input_data_dict = {'outdir': self._outdir,
+                                     'apmsgen': str(self._apmsgen),
+                                     'skip_logging': self._skip_logging,
+                                     'provenance': str(self._provenance)
+                                     }
+
     @staticmethod
     def get_example_provenance(requiredonly=True,
                                with_ids=False):
@@ -275,26 +282,29 @@ class CellmapsPPIDownloader(object):
             return
 
         if edgelist_datasetid is None:
-            if CellmapsPPIDownloader.EDGELIST_FILEKEY in self._input_data_dict and\
-                 self._input_data_dict[CellmapsPPIDownloader.EDGELIST_FILEKEY] is not None:
+            if CellmapsPPIDownloader.EDGELIST_FILEKEY in self._input_data_dict and \
+                self._input_data_dict[CellmapsPPIDownloader.EDGELIST_FILEKEY] is not None:
                 # write file and add samples dataset
-                edgelist_datasetid = self._add_dataset_to_crate(data_dict=self._provenance[CellmapsPPIDownloader.EDGELIST_FILEKEY],
-                                                                source_file=self._input_data_dict[CellmapsPPIDownloader.EDGELIST_FILEKEY],
-                                                                skip_copy=False)
+                edgelist_datasetid = self._add_dataset_to_crate(
+                    data_dict=self._provenance[CellmapsPPIDownloader.EDGELIST_FILEKEY],
+                    source_file=self._input_data_dict[CellmapsPPIDownloader.EDGELIST_FILEKEY],
+                    skip_copy=False)
                 self._inputdataset_ids.append(edgelist_datasetid)
                 logger.debug('Edgelist dataset id: ' + str(edgelist_datasetid))
 
         if baitlist_datasetid is None:
-            if CellmapsPPIDownloader.BAITLIST_FILEKEY in self._input_data_dict and\
-                 self._input_data_dict[CellmapsPPIDownloader.BAITLIST_FILEKEY] is not None:
+            if CellmapsPPIDownloader.BAITLIST_FILEKEY in self._input_data_dict and \
+                self._input_data_dict[CellmapsPPIDownloader.BAITLIST_FILEKEY] is not None:
                 # write file and add unique dataset
-                baitlist_datasetid = self._add_dataset_to_crate(data_dict=self._provenance[CellmapsPPIDownloader.BAITLIST_FILEKEY],
-                                                                source_file=self._input_data_dict[CellmapsPPIDownloader.BAITLIST_FILEKEY],
-                                                                skip_copy=False)
+                baitlist_datasetid = self._add_dataset_to_crate(
+                    data_dict=self._provenance[CellmapsPPIDownloader.BAITLIST_FILEKEY],
+                    source_file=self._input_data_dict[CellmapsPPIDownloader.BAITLIST_FILEKEY],
+                    skip_copy=False)
                 self._inputdataset_ids.append(baitlist_datasetid)
                 logger.debug('Baitlist dataset id: ' + str(baitlist_datasetid))
         if CellmapsPPIDownloader.CM4AI_ROCRATE in self._provenance:
-            parent_rocrate_id = self._provenance_utils.get_id_of_rocrate(self._provenance[CellmapsPPIDownloader.CM4AI_ROCRATE])
+            parent_rocrate_id = self._provenance_utils.get_id_of_rocrate(
+                self._provenance[CellmapsPPIDownloader.CM4AI_ROCRATE])
             self._inputdataset_ids.append(parent_rocrate_id)
 
     def _write_task_start_json(self):

@@ -41,23 +41,26 @@ def _parse_arguments(desc, args):
                         help='APMS edgelist TSV file in format of:\n'
                              'GeneID1\tSymbol1\tGeneID2\tSymbol2\n'
                              '10159\tATP6AP2\t2\tA2M')
-    parser.add_argument('--edgelist_geneid_one_col', default='GeneID1',
+    parser.add_argument('--edgelist_geneid_one_col', default=APMSGeneNodeAttributeGenerator.GENEID_COL1,
                         help='Name of column containing ensemble Gene ID 1 in --edgelist file')
-    parser.add_argument('--edgelist_symbol_one_col', default='Symbol1',
+    parser.add_argument('--edgelist_symbol_one_col', default=APMSGeneNodeAttributeGenerator.SYMBOL_COL1,
                         help='Name of column containing Gene Symbol 1 in --edgelist file')
-    parser.add_argument('--edgelist_geneid_two_col', default='GeneID2',
+    parser.add_argument('--edgelist_geneid_two_col', default=APMSGeneNodeAttributeGenerator.GENEID_COL2,
                         help='Name of column containing ensemble Gene ID 2 in --edgelist file')
-    parser.add_argument('--edgelist_symbol_two_col', default='Symbol2',
+    parser.add_argument('--edgelist_symbol_two_col', default=APMSGeneNodeAttributeGenerator.SYMBOL_COL2,
                         help='Name of column containing Gene Symbol 2 in --edgelist file')
     parser.add_argument('--baitlist',
                         help='APMS baitlist TSV file in format of:\n'
                              'GeneSymbol\tGeneID\t# Interactors\n'
                              '"ADA"\t"100"\t1.')
-    parser.add_argument('--baitlist_symbol_col', default='GeneSymbol',
+    parser.add_argument('--baitlist_symbol_col',
+                        default=APMSGeneNodeAttributeGenerator.BAITLIST_GENE_SYMBOL,
                         help='Name of column containing Gene Symbol in --baitlist file')
-    parser.add_argument('--baitlist_geneid_col', default='GeneID',
+    parser.add_argument('--baitlist_geneid_col',
+                        default=APMSGeneNodeAttributeGenerator.BAITLIST_GENE_ID,
                         help='Name of column containing ensemble Gene ID in --baitlist file')
-    parser.add_argument('--baitlist_numinteractors_col', default='# Interactors',
+    parser.add_argument('--baitlist_numinteractors_col',
+                        default=APMSGeneNodeAttributeGenerator.BAITLIST_NUM_INTERACTORS,
                         help='Name of column containing # of interactors in --baitlist file')
     parser.add_argument('--provenance',
                         help='Path to file containing provenance '
