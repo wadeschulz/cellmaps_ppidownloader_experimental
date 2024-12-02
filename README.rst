@@ -1,7 +1,7 @@
 ================================
 Cell Maps for AI PPI Downloader
 ================================
-
+The Cell Maps PPI Downloader is part of the Cell Mapping Toolkit
 
 .. image:: https://img.shields.io/pypi/v/cellmaps_ppidownloader.svg
         :target: https://pypi.python.org/pypi/cellmaps_ppidownloader
