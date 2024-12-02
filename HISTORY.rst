@@ -7,6 +7,8 @@ History
 
 * Added README generation.
 
+* Refactor code.
+
 0.1.2 (2024-09-12)
 ------------------
 
