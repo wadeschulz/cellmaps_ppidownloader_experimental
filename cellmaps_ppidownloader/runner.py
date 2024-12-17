@@ -287,7 +287,7 @@ class CellmapsPPIDownloader(object):
                 # write file and add samples dataset
                 edgelist_datasetid = self._add_dataset_to_crate(
                     data_dict=self._provenance[CellmapsPPIDownloader.EDGELIST_FILEKEY],
-                    source_file=self._input_data_dict[CellmapsPPIDownloader.EDGELIST_FILEKEY],
+                    source_file=os.path.abspath(self._input_data_dict[CellmapsPPIDownloader.EDGELIST_FILEKEY]),
                     skip_copy=False)
                 self._inputdataset_ids.append(edgelist_datasetid)
                 logger.debug('Edgelist dataset id: ' + str(edgelist_datasetid))
@@ -298,7 +298,7 @@ class CellmapsPPIDownloader(object):
                 # write file and add unique dataset
                 baitlist_datasetid = self._add_dataset_to_crate(
                     data_dict=self._provenance[CellmapsPPIDownloader.BAITLIST_FILEKEY],
-                    source_file=self._input_data_dict[CellmapsPPIDownloader.BAITLIST_FILEKEY],
+                    source_file=os.path.abspath(self._input_data_dict[CellmapsPPIDownloader.BAITLIST_FILEKEY]),
                     skip_copy=False)
                 self._inputdataset_ids.append(baitlist_datasetid)
                 logger.debug('Baitlist dataset id: ' + str(baitlist_datasetid))
