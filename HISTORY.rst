@@ -2,6 +2,11 @@
 History
 =======
 
+0.2.1 (2024-12-18)
+------------------
+
+* Fix fairscape registration for edgelist and baitlist
+
 0.2.0 (2024-12-02)
 ------------------
 
