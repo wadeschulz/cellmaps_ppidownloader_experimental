@@ -44,6 +44,7 @@ Installation
 
    git clone https://github.com/idekerlab/cellmaps_ppidownloader
    cd cellmaps_ppidownloader
+   pip install -r requirements_dev.txt
    make dist
    pip install dist/cellmaps_ppidownloader*whl
 
@@ -75,7 +76,7 @@ Output:
    dockerbuild          build docker image and store in local repository
    dockerpush           push image to dockerhub
 
-Before running tests, please install ``pip install -r requirements_dev``.
+Before running tests, please install ``pip install -r requirements_dev.txt``.
 
 
 Needed files
