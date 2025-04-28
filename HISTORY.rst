@@ -2,6 +2,11 @@
 History
 =======
 
+0.2.2 (TBD)
+--------------
+
+* Updated to PEP 517 compliant build system
+
 0.2.1 (2024-12-18)
 ------------------
 
