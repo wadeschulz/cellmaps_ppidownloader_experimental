@@ -42,10 +42,47 @@ class CellmapsPPIDownloader(object):
         :type apmsgen: :py:class:`~cellmaps_downloader.gene.APMSGeneNodeAttributeGenerator`
         :param skip_logging: If ``True`` skip logging, if ``None`` or ``False`` do NOT skip logging
         :type skip_logging: bool
-        :param provenance:
+        :param provenance: Provenance information about input files as dictionary.
+
+                           Example:
+
+                           .. code-block:: python
+
+                               {
+                                    'name': 'Example input dataset',
+                                    'organization-name': 'CM4AI',
+                                    'project-name': 'Example',
+                                    'edgelist': {
+                                        'name': 'sample edgelist',
+                                        'author': 'Krogan Lab',
+                                        'version': '1.0',
+                                        'date-published': '07-31-2023',
+                                        'description': 'AP-MS Protein interactions on HSC2 cell line, example dataset',
+                                        'data-format': 'tsv'
+                                    },
+                                    'baitlist': {
+                                        'name': 'sample baitlist',
+                                        'author': 'Krogan Lab',
+                                        'version': '1.0',
+                                        'date-published': '07-31-2023',
+                                        'description': 'AP-MS Baits used for Protein interactions on HSC2 cell line',
+                                        'data-format': 'tsv'
+                                    }
+                                }
+
         :type provenance: dict
-        :param input_data_dict:
+        :param input_data_dict: All attributes and their corresponding values of the input data e.g.
+
+                                .. code-block:: python
+
+                                    {'outdir': 'test', 'baitlist': 'path/to/file/with/baitlist'}
         :type input_data_dict: dict
+        :param imgsuffix: Unused parameter.
+
+                    .. deprecated:: 0.2.2
+
+                    The `imgsuffix` parameter is deprecated and will be removed in a future release.
+        :type imgsuffix: str
         """
         if outdir is None:
             raise CellMapsPPIDownloaderError('outdir is None')
