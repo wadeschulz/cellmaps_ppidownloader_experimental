@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 class CellmapsPPIDownloader(object):
     """
-    Class to run algorithm
+    Downloads AP-MS protein-protein interaction data, and registers datasets for provenance tracking in FAIRSCAPE.
     """
 
     EDGELIST_FILEKEY = 'edgelist'
