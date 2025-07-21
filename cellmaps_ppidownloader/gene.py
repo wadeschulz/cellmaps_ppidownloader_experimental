@@ -803,7 +803,7 @@ class NdexGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
                                           ensemblstr)
         return prey_to_id
 
-    def get_apms_edgelist(self):
+    def get_apms_edgelist (self, nice_cx, gene_node_attrs):
         """
         Gets apms edgelist
 
@@ -814,27 +814,50 @@ class NdexGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
             return self._apms_edgelist
 
         # we need to generate this list
-        baits_to_idmap = self._get_baits_to_ensemblsymbolmap()
 
-        prey_set = self._get_unique_set_from_raw_edgelist('Prey')
+        node_attrs_by_id = {}
+        for _, row in gene_node_attrs.iterrows():
+            node_attrs_by_id[row['node_id']] = row.to_dict()
 
-        prey_to_idmap = self._get_prey_to_ensemblsymbolmap()
+        edges = nice_cx.edges
+        edge_attrs = nice_cx.edgeAttributes
+
+        attr_by_edge_id = defaultdict(dict)
+        for edge_id, attr_list in edge_attrs.items():
+            for attr in attr_list:
+                attr_name = attr['n']
+                attr_value = attr['v']
+                if attr_name == 'name':
+                    continue
+                attr_by_edge_id[edge_id][attr_name] = attr_value
+    
         self._apms_edgelist = []
-        for row in self._raw_apms_edgelist:
-            if row['Bait'] not in baits_to_idmap:
-                logger.warning('Bait ' + str(row['Bait']) + ' not in map. Skipping')
-                continue
-            if row['Prey'] not in prey_to_idmap:
-                logger.warning('Prey ' + str(row['Prey'] + ' not in map. Skipping'))
-                continue
-            bait_tuple = baits_to_idmap[row['Bait']]
-            prey_tuple = prey_to_idmap[row['Prey']]
-            self._apms_edgelist.append({'GeneID1': bait_tuple[0],
-                                        'Symbol1': bait_tuple[1],
-                                        'Ensembl1': bait_tuple[2],
-                                        'GeneID2': prey_tuple[0],
-                                        'Symbol2': prey_tuple[1],
-                                        'Ensembl2': prey_tuple[2]})
+        
+        for edge_id, edge_data in edges.items():
+            source = edge_data.get('s')
+            target = edge_data.get('t')
+
+            source_info = node_attrs_by_id.get(source, {})
+            target_info = node_attrs_by_id.get(target, {})
+
+            ensembl1_raw = source_info.get('represents')
+            ensembl1 = ensembl1_raw[len('ensembl:'):] if ensembl1_raw and ensembl1_raw.startswith('ensembl:') else ensembl1_raw
+
+            ensembl2_raw = target_info.get('represents')
+            ensembl2 = ensembl2_raw[len('ensembl:'):] if ensembl2_raw and ensembl2_raw.startswith('ensembl:') else ensembl2_raw
+
+            edge_dict = {
+                'GeneID1': source_info.get('node_id'), 
+                'Symbol1': source_info.get('name'),
+                'Ensembl1': ensembl1,
+                'GeneID2': target_info.get('node_id'),
+                'Symbol2': target_info.get('name'),
+                'Ensembl2': ensembl2,
+            }
+
+            edge_dict.update(attr_by_edge_id.get(edge_id, {}))
+            self._apms_edgelist.append(edge_dict)
+
         return self._apms_edgelist
 
     def _get_apms_bait_set(self):
@@ -849,10 +872,9 @@ class NdexGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
             bait_set.add(entry['GeneID'])
         return bait_set
 
-    def get_gene_node_attributes(self):
+    def get_gene_node_attributes(self, nice_cx):
         """
-        Gene gene node attributes which is output as a list of
-        dicts in this format:
+        Gene gene node attributes which is output as a df format:
 
         .. code-block::
 
@@ -864,25 +886,41 @@ class NdexGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
 
 
 
-        :return: (list of dicts containing gene node attributes,
-                  list of str describing any errors encountered)
-        :rtype: tuple
+        :return: (list of nodes and attributes in df format
         """
-        self.get_apms_edgelist()
-        errors = []
-        gene_node_attrs = {}
-        for i in ['1', '2']:
-            if i == '1':
-                bait = True
-            else:
-                bait = False
-            for x in self._apms_edgelist:
-                if x['GeneID' + i] in gene_node_attrs:
-                    continue
-                ensemblstr = 'ensembl:' + x['Ensembl' + i]
-                gene_node_attrs[x['GeneID' + i]] = {'name': x['Symbol' + i],
-                                                    'represents': ensemblstr,
-                                                    'ambiguous': '',
-                                                    'bait': bait}
+        nodes = nice_cx.nodes
+        node_attrs = nice_cx.nodeAttributes
 
-        return gene_node_attrs, errors
+        attr_by_node_id = defaultdict(dict)
+        for node_id,attr_list in node_attrs.items():
+            for attr in attr_list:
+                attr_name = attr['n']
+                attr_value = attr['v']
+                attr_by_node_id[node_id][attr_name] = attr_value
+
+        nodes_combined = []
+        for node_id, node_data in nodes.items():
+            node_id = node_id
+            name = node_data.get('n')
+            represents = node_data.get('r', None)
+            bait_str = attr_by_node_id[node_id].get('bait', None)
+            antibody = attr_by_node_id[node_id].get('antibody', None)
+
+            if bait_str == 'true':
+                bait = True
+            elif bait_str == 'false':
+                bait = False
+            else:
+                bait = None
+
+            nodes_combined.append({
+                'node_id': node_id,
+                'name': name,
+                'represents': represents,
+                'bait': bait,
+                'antibody': antibody
+            })
+
+            gene_node_attrs = pd.DataFrame(nodes_combined)
+            
+        return gene_node_attrs
