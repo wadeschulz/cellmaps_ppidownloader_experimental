@@ -651,8 +651,8 @@ class NdexGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
     Creates APMS Gene Node Attributes table from CM4AI data
     """
 
-    def __init__(self, apms_edgelist=None,
-                 genequery=GeneQuery(), uuid):
+    def __init__(self, apms_edgelist=None, apms_baitlist=None, uuid=None,
+                 genequery=GeneQuery()):
         """
         Constructor
 
@@ -805,9 +805,12 @@ class NdexGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
 
     def get_apms_edgelist (self, nice_cx, gene_node_attrs):
         """
-        Gets apms edgelist
+        Gets AP-MS edgelist from niceCX and gene node attributes.
+        Adds safe guards for missing/malformed data.
 
-        :return:
+        :param nice_cx: NiceCXNetwork
+        :param gene_node_attrs: DataFrame with 'node_id', 'name', 'represents', etc.
+        :return: List of dicts (edges)
         :rtype: list
         """
         if self._apms_edgelist is not None:
@@ -847,10 +850,10 @@ class NdexGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
             ensembl2 = ensembl2_raw[len('ensembl:'):] if ensembl2_raw and ensembl2_raw.startswith('ensembl:') else ensembl2_raw
 
             edge_dict = {
-                'GeneID1': source_info.get('node_id'), 
+                'GeneID1': str(source_info.get('node_id')), 
                 'Symbol1': source_info.get('name'),
                 'Ensembl1': ensembl1,
-                'GeneID2': target_info.get('node_id'),
+                'GeneID2': str(target_info.get('node_id')),
                 'Symbol2': target_info.get('name'),
                 'Ensembl2': ensembl2,
             }
@@ -900,7 +903,7 @@ class NdexGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
 
         nodes_combined = []
         for node_id, node_data in nodes.items():
-            node_id = node_id
+            node_id = str(node_id)
             name = node_data.get('n')
             represents = node_data.get('r', None)
             bait_str = attr_by_node_id[node_id].get('bait', None)
@@ -922,5 +925,39 @@ class NdexGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
             })
 
             gene_node_attrs = pd.DataFrame(nodes_combined)
-            
+
         return gene_node_attrs
+    
+    def get_apms_baitlist_from_ndex(self, nice_cx):
+        nodes = nice_cx.nodes
+        node_attrs = nice_cx.nodeAttributes
+        edges = nice_cx.edges
+
+        attr_by_node_id = defaultdict(dict)
+        for node_id, attr_list in node_attrs.items():
+            for attr in attr_list:
+                attr_by_node_id[node_id][attr['n']] = attr['v']
+
+        adjacency = defaultdict(set)
+        for edge_id, edge_data in edges.items():
+            source = edge_data['s']
+            target = edge_data['t']
+            adjacency[source].add(target)
+            adjacency[target].add(source)
+
+        baitlist = []
+
+        for node_id, node_data in nodes.items():
+            is_bait = attr_by_node_id[node_id].get('bait', '').lower() == 'true'
+            if is_bait:
+                gene_symbol = node_data.get('n')
+                gene_id = str(attr_by_node_id[node_id].get('geneId', ''))
+                num_interactors = len(adjacency[node_id])
+                baitlist.append({
+                    'GeneSymbol': gene_symbol,
+                    'GeneID': gene_id,
+                    'NumInteractors': num_interactors
+                })
+
+        return baitlist
+
