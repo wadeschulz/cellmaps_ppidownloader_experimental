@@ -875,7 +875,7 @@ class NdexGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
         errors = []
 
         for node_id, node_data in nodes.items():
-            node_id = str(node_id)
+            node_id = node_id
             name = node_data.get('n')
 
             if name is None:
@@ -893,7 +893,7 @@ class NdexGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
             else:
                 bait = None
 
-            gene_node_attrs[name] = {
+            gene_node_attrs[str(node_id)] = {
                 'name': name,
                 'represents': represents,
                 'ambiguous': ambiguous,
