@@ -670,80 +670,99 @@ class NdexGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
         :param genequery:
         """
         super().__init__()
-        self._raw_apms_edgelist = apms_edgelist
-        self._apms_edgelist = None
+        self._apms_edgelist = apms_edgelist
+        self._apms_baitlist = apms_baitlist
         self._genequery = genequery
         self.uuid = uuid
-        self.ndexserver = "http://public.ndexbio.org"
-        self.nice_cx = ndex2.create_nice_cx_from_server(self.ndexserver, uuid=uuid)
-        self.node_attrs_list = self.get_gene_node_attributes (self.nice_cx)
-
+        self.nice_cx = ndex2.create_nice_cx_from_server("http://public.ndexbio.org", uuid=uuid)
+    
     @staticmethod
-    def get_apms_edgelist_from_tsvfile(tsvfile=None,
-                                       bait_col='Bait',
-                                       prey_col='Prey',
-                                       bfdr_col=None,
-                                       foldchange_col=None,
-                                       foldchange_cutoff=0.0,
-                                       bfdr_maxcutoff=0.05):
+    def get_apms_edgelist (uuid=None):
         """
-        Generates list of dicts by parsing TSV file specified
-        by **tsvfile** with the
-        format header column and corresponding values:
+        Gets AP-MS edgelist from niceCX and gene node attributes.
+        Adds safe guards for missing/malformed data.
 
-        .. code-block::
-
-            Bait\tPrey\tBFDR.x\tFoldChange.x
-
-        .. note::
-
-           If BFDR.x column does not exist, no BFDR filtering will occur
-           Same goes if FoldChange.x column does not exist
-
-        :param tsvfile: Path to TSV file with above format
-        :type tsvfile: str
-        :param bait_col: Name of bait column
-        :type bait_col: str
-        :param prey_col: Name of prey column
-        :type prey_col: str
-        :param bfdr_col: Name of BFDR aka false discovery rate column
-                         If ``None`` no BFDR filtering will occur
-        :type bfdr_col: str
-        :param foldchange_col: Name of FoldChange column
-                               If ``None`` no FoldChange filtering will occur
-        :type foldchange_col: str
-        :param foldchange_cutoff: Foldchange cutoff. Only keep rows with
-                                  values greater then this value.
-                                  If this value is ``None`` no filtering
-                                  will occur
-        :type foldchange_cutoff: float
-        :param bfdr_maxcutoff: BFDR cutoff. Only keep rows with BFDR
-                               less then or equal to this value.
-                               If this value is ``None`` no filtering will
-                               occur
-        :type bfdr_maxcutoff: float
-        :return: list of dicts, with each dict of format:
-
-                 .. code-block::
-
-                      {'Bait': VAL,
-                       'Prey': VAL}
+        :param nice_cx: NiceCXNetwork
+        :param gene_node_attrs: DataFrame with 'node_id', 'name', 'represents', etc.
+        :return: List of dicts (edges)
         :rtype: list
         """
-        edgelist = []
-        with open(tsvfile, 'r') as f:
-            reader = csv.DictReader(f, delimiter='\t')
-            for row in reader:
-                if bfdr_col is not None and bfdr_col in row \
-                    and row[bfdr_col] > bfdr_maxcutoff:
-                    continue
-                if foldchange_col is not None and foldchange_col in row \
-                    and row[foldchange_col] <= foldchange_cutoff:
-                    continue
-                edgelist.append({'Bait': row[bait_col],
-                                 'Prey': row[prey_col]})
-        return edgelist
 
+        # we need to generate this list
+
+        nice_cx = ndex2.create_nice_cx_from_server("http://public.ndexbio.org", uuid=uuid)
+
+        nodes = nice_cx.nodes
+        edges = nice_cx.edges
+        edge_attrs = nice_cx.edgeAttributes
+
+        attr_by_edge_id = defaultdict(dict)
+        for edge_id, attr_list in edge_attrs.items():
+            for attr in attr_list:
+                attr_name = attr['n']
+                attr_value = attr['v']
+                if attr_name == 'name':
+                    continue
+                attr_by_edge_id[edge_id][attr_name] = attr_value
+
+        edgelist = []
+        for edge_id, edge_data in edges.items():
+            source = edge_data.get('s')
+            target = edge_data.get('t')
+
+            source_info = nodes.get(source, {})
+            target_info = nodes.get(target, {})
+
+            edge_dict = {
+                'GeneID1': str(source),  
+                'Symbol1': source_info.get('n'),  
+                'GeneID2': str(target),
+                'Symbol2': target_info.get('n'),
+            }
+
+            edge_dict.update(attr_by_edge_id.get(edge_id, {}))
+            edgelist.append(edge_dict)
+
+        return edgelist
+    
+    @staticmethod
+    def get_apms_baitlist_from_ndex(uuid=None):
+
+        nice_cx = ndex2.create_nice_cx_from_server("http://public.ndexbio.org", uuid=uuid)
+
+        nodes = nice_cx.nodes
+        node_attrs = nice_cx.nodeAttributes
+        edges = nice_cx.edges
+
+        attr_by_node_id = defaultdict(dict)
+        for node_id, attr_list in node_attrs.items():
+            for attr in attr_list:
+                attr_by_node_id[node_id][attr['n']] = attr['v']
+
+        adjacency = defaultdict(set)
+        for edge_id, edge_data in edges.items():
+            source = edge_data['s']
+            target = edge_data['t']
+            adjacency[source].add(target)
+            adjacency[target].add(source)
+
+        baitlist = []
+
+        for node_id, node_data in nodes.items():
+            is_bait = attr_by_node_id[node_id].get('bait', '').lower() == 'true'
+            if is_bait:
+                gene_symbol = node_data.get('n')
+                gene_id = str(node_id)
+                num_interactors = len(adjacency[node_id])
+                baitlist.append({
+                    'GeneSymbol': gene_symbol,
+                    'GeneID': gene_id,
+                    'NumInteractors': num_interactors
+                })
+
+        return baitlist
+
+    
     def _get_unique_set_from_raw_edgelist(self, colname=None):
         """
         Given a column name **colname** extract unique set of values from
@@ -803,7 +822,7 @@ class NdexGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
                                           ensemblstr)
         return prey_to_id
 
-    def get_apms_edgelist (self, nice_cx, gene_node_attrs):
+    def get_apms_edgelist (self, nice_cx):
         """
         Gets AP-MS edgelist from niceCX and gene node attributes.
         Adds safe guards for missing/malformed data.
@@ -813,15 +832,10 @@ class NdexGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
         :return: List of dicts (edges)
         :rtype: list
         """
-        if self._apms_edgelist is not None:
-            return self._apms_edgelist
 
         # we need to generate this list
 
-        node_attrs_by_id = {}
-        for _, row in gene_node_attrs.iterrows():
-            node_attrs_by_id[row['node_id']] = row.to_dict()
-
+        nodes = nice_cx.nodes
         edges = nice_cx.edges
         edge_attrs = nice_cx.edgeAttributes
 
@@ -833,35 +847,27 @@ class NdexGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
                 if attr_name == 'name':
                     continue
                 attr_by_edge_id[edge_id][attr_name] = attr_value
-    
+
         self._apms_edgelist = []
-        
         for edge_id, edge_data in edges.items():
             source = edge_data.get('s')
             target = edge_data.get('t')
 
-            source_info = node_attrs_by_id.get(source, {})
-            target_info = node_attrs_by_id.get(target, {})
-
-            ensembl1_raw = source_info.get('represents')
-            ensembl1 = ensembl1_raw[len('ensembl:'):] if ensembl1_raw and ensembl1_raw.startswith('ensembl:') else ensembl1_raw
-
-            ensembl2_raw = target_info.get('represents')
-            ensembl2 = ensembl2_raw[len('ensembl:'):] if ensembl2_raw and ensembl2_raw.startswith('ensembl:') else ensembl2_raw
+            source_info = nodes.get(source, {})
+            target_info = nodes.get(target, {})
 
             edge_dict = {
-                'GeneID1': str(source_info.get('node_id')), 
-                'Symbol1': source_info.get('name'),
-                'Ensembl1': ensembl1,
-                'GeneID2': str(target_info.get('node_id')),
-                'Symbol2': target_info.get('name'),
-                'Ensembl2': ensembl2,
+                'GeneID1': str(source),  
+                'Symbol1': source_info.get('n'),  
+                'GeneID2': str(target),
+                'Symbol2': target_info.get('n'),
             }
 
             edge_dict.update(attr_by_edge_id.get(edge_id, {}))
             self._apms_edgelist.append(edge_dict)
 
         return self._apms_edgelist
+
 
     def _get_apms_bait_set(self):
         """
@@ -877,7 +883,7 @@ class NdexGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
 
     def get_gene_node_attributes(self, nice_cx):
         """
-        Gene gene node attributes which is output as a df format:
+        Gene gene node attributes :
 
         .. code-block::
 
@@ -901,11 +907,12 @@ class NdexGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
                 attr_value = attr['v']
                 attr_by_node_id[node_id][attr_name] = attr_value
 
-        nodes_combined = []
+        gene_node_attrs = []
         for node_id, node_data in nodes.items():
             node_id = str(node_id)
             name = node_data.get('n')
             represents = node_data.get('r', None)
+            ambiguous = attr_by_node_id[node_id].get('ambiguous', None)
             bait_str = attr_by_node_id[node_id].get('bait', None)
             antibody = attr_by_node_id[node_id].get('antibody', None)
 
@@ -916,15 +923,13 @@ class NdexGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
             else:
                 bait = None
 
-            nodes_combined.append({
-                'node_id': node_id,
+            gene_node_attrs.append({
                 'name': name,
                 'represents': represents,
+                'ambiguous': ambiguous,
                 'bait': bait,
                 'antibody': antibody
             })
-
-            gene_node_attrs = pd.DataFrame(nodes_combined)
 
         return gene_node_attrs
     
@@ -945,19 +950,19 @@ class NdexGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
             adjacency[source].add(target)
             adjacency[target].add(source)
 
-        baitlist = []
+        self._apms_baitlist = []
 
         for node_id, node_data in nodes.items():
             is_bait = attr_by_node_id[node_id].get('bait', '').lower() == 'true'
             if is_bait:
                 gene_symbol = node_data.get('n')
-                gene_id = str(attr_by_node_id[node_id].get('geneId', ''))
+                gene_id = str(node_id)
                 num_interactors = len(adjacency[node_id])
-                baitlist.append({
+                self._apms_baitlist.append({
                     'GeneSymbol': gene_symbol,
                     'GeneID': gene_id,
                     'NumInteractors': num_interactors
                 })
 
-        return baitlist
+        return self._apms_baitlist
 
