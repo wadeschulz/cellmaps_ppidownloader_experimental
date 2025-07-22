@@ -677,7 +677,7 @@ class NdexGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
         self.nice_cx = ndex2.create_nice_cx_from_server("http://public.ndexbio.org", uuid=uuid)
     
     @staticmethod
-    def get_apms_edgelist (uuid=None):
+    def get_apms_edgelist_from_ndex (uuid=None):
         """
         Gets AP-MS edgelist from niceCX and gene node attributes.
         Adds safe guards for missing/malformed data.
