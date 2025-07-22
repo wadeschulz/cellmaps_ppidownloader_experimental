@@ -762,7 +762,15 @@ class NdexGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
 
         return baitlist
 
-    
+    def get_apms_edgelist(self):
+        """
+        Gets apms edgelist passed in via constructor
+
+        :return:
+        :rtype: list
+        """
+        return self._apms_edgelist
+
     def _get_unique_set_from_raw_edgelist(self, colname=None):
         """
         Given a column name **colname** extract unique set of values from
@@ -822,51 +830,6 @@ class NdexGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
                                           ensemblstr)
         return prey_to_id
 
-    def get_apms_edgelist (self, nice_cx):
-        """
-        Gets AP-MS edgelist from niceCX and gene node attributes.
-        Adds safe guards for missing/malformed data.
-
-        :param nice_cx: NiceCXNetwork
-        :param gene_node_attrs: DataFrame with 'node_id', 'name', 'represents', etc.
-        :return: List of dicts (edges)
-        :rtype: list
-        """
-
-        # we need to generate this list
-
-        nodes = nice_cx.nodes
-        edges = nice_cx.edges
-        edge_attrs = nice_cx.edgeAttributes
-
-        attr_by_edge_id = defaultdict(dict)
-        for edge_id, attr_list in edge_attrs.items():
-            for attr in attr_list:
-                attr_name = attr['n']
-                attr_value = attr['v']
-                if attr_name == 'name':
-                    continue
-                attr_by_edge_id[edge_id][attr_name] = attr_value
-
-        self._apms_edgelist = []
-        for edge_id, edge_data in edges.items():
-            source = edge_data.get('s')
-            target = edge_data.get('t')
-
-            source_info = nodes.get(source, {})
-            target_info = nodes.get(target, {})
-
-            edge_dict = {
-                'GeneID1': str(source),  
-                'Symbol1': source_info.get('n'),  
-                'GeneID2': str(target),
-                'Symbol2': target_info.get('n'),
-            }
-
-            edge_dict.update(attr_by_edge_id.get(edge_id, {}))
-            self._apms_edgelist.append(edge_dict)
-
-        return self._apms_edgelist
 
 
     def _get_apms_bait_set(self):
@@ -881,7 +844,7 @@ class NdexGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
             bait_set.add(entry['GeneID'])
         return bait_set
 
-    def get_gene_node_attributes(self, nice_cx):
+    def get_gene_node_attributes(self):
         """
         Gene gene node attributes :
 
@@ -897,6 +860,7 @@ class NdexGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
 
         :return: (list of nodes and attributes in df format
         """
+        nice_cx = self.nice_cx
         nodes = nice_cx.nodes
         node_attrs = nice_cx.nodeAttributes
 
@@ -907,14 +871,20 @@ class NdexGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
                 attr_value = attr['v']
                 attr_by_node_id[node_id][attr_name] = attr_value
 
-        gene_node_attrs = []
+        gene_node_attrs = {}
+        errors = []
+
         for node_id, node_data in nodes.items():
             node_id = str(node_id)
             name = node_data.get('n')
+
+            if name is None:
+                errors.append(f"Node {node_id} has no 'name'")
+                continue
+
             represents = node_data.get('r', None)
             ambiguous = attr_by_node_id[node_id].get('ambiguous', None)
             bait_str = attr_by_node_id[node_id].get('bait', None)
-            antibody = attr_by_node_id[node_id].get('antibody', None)
 
             if bait_str == 'true':
                 bait = True
@@ -923,46 +893,12 @@ class NdexGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
             else:
                 bait = None
 
-            gene_node_attrs.append({
+            gene_node_attrs[name] = {
                 'name': name,
                 'represents': represents,
                 'ambiguous': ambiguous,
                 'bait': bait,
-                'antibody': antibody
-            })
+            }
 
-        return gene_node_attrs
+        return gene_node_attrs, errors
     
-    def get_apms_baitlist_from_ndex(self, nice_cx):
-        nodes = nice_cx.nodes
-        node_attrs = nice_cx.nodeAttributes
-        edges = nice_cx.edges
-
-        attr_by_node_id = defaultdict(dict)
-        for node_id, attr_list in node_attrs.items():
-            for attr in attr_list:
-                attr_by_node_id[node_id][attr['n']] = attr['v']
-
-        adjacency = defaultdict(set)
-        for edge_id, edge_data in edges.items():
-            source = edge_data['s']
-            target = edge_data['t']
-            adjacency[source].add(target)
-            adjacency[target].add(source)
-
-        self._apms_baitlist = []
-
-        for node_id, node_data in nodes.items():
-            is_bait = attr_by_node_id[node_id].get('bait', '').lower() == 'true'
-            if is_bait:
-                gene_symbol = node_data.get('n')
-                gene_id = str(node_id)
-                num_interactors = len(adjacency[node_id])
-                self._apms_baitlist.append({
-                    'GeneSymbol': gene_symbol,
-                    'GeneID': gene_id,
-                    'NumInteractors': num_interactors
-                })
-
-        return self._apms_baitlist
-
