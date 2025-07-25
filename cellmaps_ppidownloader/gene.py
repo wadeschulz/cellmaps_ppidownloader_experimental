@@ -4,6 +4,11 @@ import logging
 import mygene
 from tqdm import tqdm
 
+import ndex2
+from ndex2.nice_cx_network import NiceCXNetwork
+import pandas as pd
+from collections import defaultdict
+
 from cellmaps_ppidownloader.exceptions import CellMapsPPIDownloaderError
 
 logger = logging.getLogger(__name__)
@@ -639,3 +644,261 @@ class CM4AIGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
                                                     'bait': bait}
 
         return gene_node_attrs, errors
+
+
+class NdexGeneNodeAttributeGenerator(GeneNodeAttributeGenerator):
+    """
+    Creates APMS Gene Node Attributes table from CM4AI data
+    """
+
+    def __init__(self, apms_edgelist=None, apms_baitlist=None, uuid=None,
+                 genequery=GeneQuery()):
+        """
+        Constructor
+
+        :param apms_edgelist: list of dict elements where each
+                              dict is of format:
+
+                              .. code-block::
+
+                                  {'Bait': VAL,
+                                   'Prey': VAL,
+                                   'logOddsScore': VAL,
+                                   'FoldChange.x': VAL,
+                                   'BFDR.x': VAL}
+        :type apms_edgelist: list
+        :param genequery:
+        """
+        super().__init__()
+        self._apms_edgelist = apms_edgelist
+        self._apms_baitlist = apms_baitlist
+        self._genequery = genequery
+        self.uuid = uuid
+        self.nice_cx = ndex2.create_nice_cx_from_server("http://public.ndexbio.org", uuid=uuid)
+    
+    @staticmethod
+    def get_apms_edgelist_from_ndex (uuid=None):
+        """
+        Gets AP-MS edgelist from niceCX and gene node attributes.
+        Adds safe guards for missing/malformed data.
+
+        :param nice_cx: NiceCXNetwork
+        :param gene_node_attrs: DataFrame with 'node_id', 'name', 'represents', etc.
+        :return: List of dicts (edges)
+        :rtype: list
+        """
+
+        # we need to generate this list
+
+        nice_cx = ndex2.create_nice_cx_from_server("http://public.ndexbio.org", uuid=uuid)
+
+        nodes = nice_cx.nodes
+        edges = nice_cx.edges
+        edge_attrs = nice_cx.edgeAttributes
+
+        attr_by_edge_id = defaultdict(dict)
+        for edge_id, attr_list in edge_attrs.items():
+            for attr in attr_list:
+                attr_name = attr['n']
+                attr_value = attr['v']
+                if attr_name == 'name':
+                    continue
+                attr_by_edge_id[edge_id][attr_name] = attr_value
+
+        edgelist = []
+        for edge_id, edge_data in edges.items():
+            source = edge_data.get('s')
+            target = edge_data.get('t')
+
+            source_info = nodes.get(source, {})
+            target_info = nodes.get(target, {})
+
+            edge_dict = {
+                'GeneID1': str(source),  
+                'Symbol1': source_info.get('n'),  
+                'GeneID2': str(target),
+                'Symbol2': target_info.get('n'),
+            }
+
+            edge_dict.update(attr_by_edge_id.get(edge_id, {}))
+            edgelist.append(edge_dict)
+
+        return edgelist
+    
+    @staticmethod
+    def get_apms_baitlist_from_ndex(uuid=None):
+
+        nice_cx = ndex2.create_nice_cx_from_server("http://public.ndexbio.org", uuid=uuid)
+
+        nodes = nice_cx.nodes
+        node_attrs = nice_cx.nodeAttributes
+        edges = nice_cx.edges
+
+        attr_by_node_id = defaultdict(dict)
+        for node_id, attr_list in node_attrs.items():
+            for attr in attr_list:
+                attr_by_node_id[node_id][attr['n']] = attr['v']
+
+        adjacency = defaultdict(set)
+        for edge_id, edge_data in edges.items():
+            source = edge_data['s']
+            target = edge_data['t']
+            adjacency[source].add(target)
+            adjacency[target].add(source)
+
+        baitlist = []
+
+        for node_id, node_data in nodes.items():
+            is_bait = attr_by_node_id[node_id].get('bait', '').lower() == 'true'
+            if is_bait:
+                gene_symbol = node_data.get('n')
+                gene_id = str(node_id)
+                num_interactors = len(adjacency[node_id])
+                baitlist.append({
+                    'GeneSymbol': gene_symbol,
+                    'GeneID': gene_id,
+                    'NumInteractors': num_interactors
+                })
+
+        return baitlist
+
+    def get_apms_edgelist(self):
+        """
+        Gets apms edgelist passed in via constructor
+
+        :return:
+        :rtype: list
+        """
+        return self._apms_edgelist
+
+    def _get_unique_set_from_raw_edgelist(self, colname=None):
+        """
+        Given a column name **colname** extract unique set of values from
+        raw apms edgelist passed in via constructor
+
+        :return:
+        :rtype: set
+        """
+        col_set = set()
+        for entry in self._raw_apms_edgelist:
+            col_set.add(entry[colname])
+        return col_set
+
+    def _get_baits_to_ensemblsymbolmap(self):
+        """
+        Get unique set of bait names from raw apms edgelist
+        and query mygene to get symbols and ensembl gene ids
+
+        :return: original bait name to mapped to tuple
+                 (id, symbol, ensembl gene id)
+        :rtype: dict
+        """
+        bait_set = self._get_unique_set_from_raw_edgelist('Bait')
+        res = self._genequery.get_symbols_for_genes(list(bait_set),
+                                                    scopes='symbol')
+        bait_to_id = {}
+        for entry in res:
+            bait_to_id[entry['query']] = (entry['_id'],
+                                          entry['symbol'],
+                                          entry['ensembl']['gene'])
+        return bait_to_id
+
+    def _get_prey_to_ensemblsymbolmap(self):
+        """
+        Get unique set of prey names from raw apms edgelist
+        and query mygene to get symbols and ensembl gene ids
+
+        :return: original bait name to mapped to tuple
+                 (id, symbol, ensembl gene id)
+        :rtype: dict
+        """
+        prey_set = self._get_unique_set_from_raw_edgelist('Prey')
+        res = self._genequery.get_symbols_for_genes(list(prey_set),
+                                                    scopes='uniprot')
+        prey_to_id = {}
+        for entry in res:
+            ensemblstr = ''
+            if 'ensembl' not in entry:
+                logger.error(str(entry) + ' no ensembl found')
+                continue
+            if isinstance(entry['ensembl'], list):
+                ensemblstr += ';'.join([g['gene'] for g in entry['ensembl']])
+            else:
+                ensemblstr = entry['ensembl']['gene']
+            prey_to_id[entry['query']] = (entry['_id'],
+                                          entry['symbol'],
+                                          ensemblstr)
+        return prey_to_id
+
+
+
+    def _get_apms_bait_set(self):
+        """
+        Gets unique set of baits
+
+        :return:
+        :rtype: set
+        """
+        bait_set = set()
+        for entry in self._apms_baitlist:
+            bait_set.add(entry['GeneID'])
+        return bait_set
+
+    def get_gene_node_attributes(self):
+        """
+        Gene gene node attributes :
+
+        .. code-block::
+
+            { 'GENEID': { 'name': 'GENESYMBOL',
+                          'represents': 'ensemble:ENSEMBLID1;ENSEMBLID2..',
+                          'ambiguous': 'ALTERNATE GENEs',
+                          'bait': True or False}
+            }
+
+
+
+        :return: (list of nodes and attributes in df format
+        """
+        nice_cx = self.nice_cx
+        nodes = nice_cx.nodes
+        node_attrs = nice_cx.nodeAttributes
+
+        attr_by_node_id = defaultdict(dict)
+        for node_id,attr_list in node_attrs.items():
+            for attr in attr_list:
+                attr_name = attr['n']
+                attr_value = attr['v']
+                attr_by_node_id[node_id][attr_name] = attr_value
+
+        gene_node_attrs = {}
+        errors = []
+
+        for node_id, node_data in nodes.items():
+            node_id = node_id
+            name = node_data.get('n')
+
+            if name is None:
+                errors.append(f"Node {node_id} has no 'name'")
+                continue
+
+            represents = node_data.get('r', None)
+            ambiguous = attr_by_node_id[node_id].get('ambiguous', None)
+            bait_str = attr_by_node_id[node_id].get('bait', None)
+
+            if bait_str == 'true':
+                bait = True
+            elif bait_str == 'false':
+                bait = False
+            else:
+                bait = None
+
+            gene_node_attrs[str(node_id)] = {
+                'name': name,
+                'represents': represents,
+                'ambiguous': ambiguous,
+                'bait': bait,
+            }
+
+        return gene_node_attrs, errors
+    
